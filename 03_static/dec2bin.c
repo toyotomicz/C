@@ -12,7 +12,7 @@ int main(int argc,char *argv[]){
 
     dec = abs(atoi(argv[1]));
 
-    printf("%d:d =", dec);
+    printf("%d:d = ", dec);
 
     /* zbiram zbyky po deleni a ukladam do pole inverted_bin */
     for(i = 0 ; dec != 0 ; dec /= 2, ++i){
