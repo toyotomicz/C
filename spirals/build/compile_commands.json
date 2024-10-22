@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/jjoska/C/spirals/build",
+  "command": "/usr/bin/cc   -Wall -Wextra -pedantic -g -o CMakeFiles/spirals.dir/src/spirals.c.o -c /home/jjoska/C/spirals/src/spirals.c",
+  "file": "/home/jjoska/C/spirals/src/spirals.c",
+  "output": "CMakeFiles/spirals.dir/src/spirals.c.o"
+},
+{
+  "directory": "/home/jjoska/C/spirals/build",
+  "command": "/usr/bin/cc   -Wall -Wextra -pedantic -g -o CMakeFiles/spirals.dir/src/matrix/matrix.c.o -c /home/jjoska/C/spirals/src/matrix/matrix.c",
+  "file": "/home/jjoska/C/spirals/src/matrix/matrix.c",
+  "output": "CMakeFiles/spirals.dir/src/matrix/matrix.c.o"
+}
+]
