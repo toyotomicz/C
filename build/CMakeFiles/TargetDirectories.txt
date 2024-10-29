@@ -1,0 +1,3 @@
+/home/jjoska/C/build/CMakeFiles/spirals.dir
+/home/jjoska/C/build/CMakeFiles/edit_cache.dir
+/home/jjoska/C/build/CMakeFiles/rebuild_cache.dir

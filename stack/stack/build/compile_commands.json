@@ -1,0 +1,20 @@
+[
+{
+  "directory": "/home/jjoska/C/stack/stack/build",
+  "command": "/usr/bin/gcc   -Wall -Wextra -pedantic -ansi -g -o CMakeFiles/parser.dir/src/parser.c.o -c /home/jjoska/C/stack/stack/src/parser.c",
+  "file": "/home/jjoska/C/stack/stack/src/parser.c",
+  "output": "CMakeFiles/parser.dir/src/parser.c.o"
+},
+{
+  "directory": "/home/jjoska/C/stack/stack/build",
+  "command": "/usr/bin/gcc   -Wall -Wextra -pedantic -ansi -g -o CMakeFiles/parser.dir/src/operators.c.o -c /home/jjoska/C/stack/stack/src/operators.c",
+  "file": "/home/jjoska/C/stack/stack/src/operators.c",
+  "output": "CMakeFiles/parser.dir/src/operators.c.o"
+},
+{
+  "directory": "/home/jjoska/C/stack/stack/build",
+  "command": "/usr/bin/gcc   -Wall -Wextra -pedantic -ansi -g -o CMakeFiles/parser.dir/src/stack/stack.c.o -c /home/jjoska/C/stack/stack/src/stack/stack.c",
+  "file": "/home/jjoska/C/stack/stack/src/stack/stack.c",
+  "output": "CMakeFiles/parser.dir/src/stack/stack.c.o"
+}
+]

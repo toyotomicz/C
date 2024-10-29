@@ -1,0 +1,54 @@
+%!PS-Adobe-3.0
+306 396 translate    % Posun na střed stránky
+40 40 scale          % Nastavení měřítka
+
+% Nastavení tloušťky čáry
+0.02 setlinewidth
+
+% Hlavní osy
+newpath
+-10 0 moveto
+10 0 lineto
+stroke
+
+newpath
+0 -10 moveto
+0 10 lineto
+stroke
+
+% Popisky os
+/Times-Roman findfont 0.3 scalefont setfont
+
+% X-ová osa čísla
+-10 1 10 {
+    dup dup
+    -0.3 moveto
+    cvi
+    20 string cvs show
+} for
+
+% Y-ová osa čísla
+-10 1 10 {
+    dup
+    0.2 exch
+    -0.2 add moveto
+    cvi
+    20 string cvs show
+} for
+
+% Funkce f(x) = x * sin(1/x)
+/f {
+    dup abs 0.1 lt { pop 0 } { 1 exch div sin mul } ifelse
+} def
+% Vykreslení funkce
+newpath
+-10 dup f moveto     % Nastavení počátečního bodu grafu
+-10 0.1 10 {         % Krokování hodnot od -10 do 10 s krokem 0.1
+    dup              % Duplikace hodnoty x pro f(x)
+    f                % Výpočet f(x)
+    exch             % Přepnutí hodnot na zásobníku
+    lineto           % Vykreslení čáry k bodu (x, f(x))
+} for
+stroke
+
+showpage
