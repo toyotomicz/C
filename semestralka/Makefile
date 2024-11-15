@@ -1,40 +1,45 @@
-# Linux Makefile
-# makefile
+# Cesta k složkám
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
 
-CC=gcc
-CFLAGS=-Wall -Wextra -pedantic -ansi
-SRC_DIR=src
-OBJ_DIR=obj
-BIN_DIR=bin
+# Název výsledného spustitelného souboru
+TARGET = $(BIN_DIR)/program
 
-# Source files
-SOURCES=$(wildcard $(SRC_DIR)/*.c)
-# Object files
-OBJECTS=$(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-# Executable name
-EXECUTABLE=$(BIN_DIR)/graph
+# Kompilátor a příznaky
+CC = gcc
+CFLAGS = -Wall -I$(SRC_DIR) -I$(SRC_DIR)/stack
 
-# Default target
-all: $(BIN_DIR) $(OBJ_DIR) $(EXECUTABLE)
+# Seznam zdrojových souborů
+SRCS = $(SRC_DIR)/main2.c \
+       $(SRC_DIR)/parser2.c \
+       $(SRC_DIR)/postscript.c \
+       $(SRC_DIR)/stack/stack.c
 
-# Create directories if they don't exist
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
+# Vytvoření seznamu objektových souborů
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+# Výchozí cíl
+all: $(TARGET)
 
-# Linking
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(EXECUTABLE) $(CFLAGS)
+# Pravidlo pro vytvoření spustitelného souboru
+$(TARGET): $(OBJS)
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) -lm
 
-# Compilation
+# Pravidlo pro vytvoření objektových souborů
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	@mkdir -p $(OBJ_DIR)/stack
+	$(CC) $(CFLAGS) -MMD -c $< -o $@
 
-# Clean
+# Zahrnutí závislostí vytvořených pomocí -MMD
+-include $(OBJS:.o=.d)
+
+# Pravidlo pro vyčištění objektových a binárních souborů
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -rf $(OBJ_DIR) $(BIN_DIR)/program
 
-# Phony targets
-.PHONY: all clean
+# Pravidlo pro vyčištění a přeložení znovu
+rebuild: clean all
+
+.PHONY: all clean rebuild
