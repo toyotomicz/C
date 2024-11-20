@@ -1,45 +1,28 @@
-# Cesta k složkám
-SRC_DIR = src
-OBJ_DIR = obj
-BIN_DIR = bin
-
-# Název výsledného spustitelného souboru
-TARGET = $(BIN_DIR)/program
-
 # Kompilátor a příznaky
 CC = gcc
-CFLAGS = -Wall -I$(SRC_DIR) -I$(SRC_DIR)/stack
+CFLAGS = -Wall -Wextra -ansi
 
-# Seznam zdrojových souborů
-SRCS = $(SRC_DIR)/main2.c \
-       $(SRC_DIR)/parser2.c \
-       $(SRC_DIR)/postscript.c \
-       $(SRC_DIR)/stack/stack.c
+# Cílový název programu
+TARGET = bin/program
 
-# Vytvoření seznamu objektových souborů
-OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+# Zdrojové soubory
+SRCDIR = src
+SRCS = $(SRCDIR)/main.c $(SRCDIR)/parser.c
+OBJS = $(SRCS:.c=.o)
 
-# Výchozí cíl
-all: $(TARGET)
-
-# Pravidlo pro vytvoření spustitelného souboru
-$(TARGET): $(OBJS)
-	@mkdir -p $(BIN_DIR)
+# Pravidlo pro vytvoření cílového programu
+$(TARGET): $(OBJS) | bin
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) -lm
 
-# Pravidlo pro vytvoření objektových souborů
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)/stack
-	$(CC) $(CFLAGS) -MMD -c $< -o $@
+# Vytvoření bin adresáře pokud neexistuje
+bin:
+	mkdir -p bin
 
-# Zahrnutí závislostí vytvořených pomocí -MMD
--include $(OBJS:.o=.d)
+# Pravidlo pro kompilaci jednotlivých .c souborů
+$(SRCDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Pravidlo pro vyčištění objektových a binárních souborů
+# Vyčištění generovaných souborů
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)/program
-
-# Pravidlo pro vyčištění a přeložení znovu
-rebuild: clean all
-
-.PHONY: all clean rebuild
+	rm -f $(OBJS) $(TARGET)
+	rmdir bin 2>/dev/null || true

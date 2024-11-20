@@ -1,0 +1,52 @@
+%!PS
+% PostScript program to plot mathematical functions from -10 to 10
+% Define constants
+/inch {72 mul} def           % 1 inch = 72 points
+/margin 1 inch def           % Margin around the plot
+/plotWidth 6 inch def        % Width of the plot
+/plotHeight 4 inch def       % Height of the plot
+/xMin -10 def
+/xMax 10 def
+/yMin -1.5 def
+/yMax 1.5 def
+
+% Transform function: maps x,y to page coordinates
+/transform {
+    % (x, y) -> (x', y')
+    margin add
+    exch xMin sub xMax xMin sub div plotWidth mul add exch
+    margin add
+    exch yMin sub yMax yMin sub div plotHeight mul add exch
+} def
+
+% Draw axes
+/drawAxes {
+    newpath
+    % X-axis
+    margin plotHeight 2 div add moveto
+    margin plotWidth margin add lineto
+    stroke
+    % Y-axis
+    margin add margin moveto
+    margin add plotHeight margin add lineto
+    stroke
+} def
+
+% Draw function
+/drawFunction {
+    newpath
+    xMin 0.1 xMax {
+        /x exch def
+        /y x sin def          % Define the function y = sin(x)
+        x y transform
+        xMin eq { moveto } { lineto } ifelse
+    } for
+    stroke
+} def
+
+% Main program
+gsave
+drawAxes
+drawFunction
+grestore
+showpage
