@@ -254,81 +254,133 @@ void match(Parser *p, char expected) {
     }
 }
 
+/* Funkce pro validaci matematického výrazu */
 int validateExpression(const char *expr) {
-    int parenCount = 0;
-    const char *p = expr;
-    int hasValidChar = 0;
-    int hasX = 0;
-    
-    while (*p) {
-        if (*p == '(') {
-            parenCount++;
-            hasValidChar = 1;
-        } else if (*p == ')') {
-            parenCount--;
-            if (parenCount < 0) {
-                fprintf(stderr, "Error: Unmatched closing parenthesis\n");
-                return 0;
-            }
-            hasValidChar = 1;
-        } else if (*p == 'x') {
-            hasX = 1;
-            hasValidChar = 1;
-        } else if (isdigit(*p) || *p == '.') {
-            hasValidChar = 1;
-        } else if (*p == 'E' || *p == 'e') {
-            if (p[1] == '+' || p[1] == '-') {
-                if (!isdigit(p[2])) {
-                    fprintf(stderr, "Error: Invalid scientific notation format\n");
-                    return 0;
-                }
-                p += 2;
-            } else if (!isdigit(p[1])) {
-                fprintf(stderr, "Error: Invalid scientific notation format\n");
-                return 0;
-            }
-            hasValidChar = 1;
-        } else if (isalpha(*p)) {
-            // Kontrola známých funkcí
-            const char *funcStart = p;
-            while (isalpha(*p)) p++;
-            size_t funcLen = p - funcStart;
-            p--; // Vrátíme se o jeden znak zpět, protože cyklus while inkrementuje p
-            
-            if (funcLen > 1 && *funcStart != 'x') {  // Ignorujeme 'x' jako proměnnou
-                if (strncmp(funcStart, "sin", funcLen) != 0 &&
-                    strncmp(funcStart, "cos", funcLen) != 0 &&
-                    strncmp(funcStart, "tan", funcLen) != 0 &&
-                    strncmp(funcStart, "asin", funcLen) != 0 &&
-                    strncmp(funcStart, "acos", funcLen) != 0 &&
-                    strncmp(funcStart, "atan", funcLen) != 0 &&
-                    strncmp(funcStart, "sinh", funcLen) != 0 &&
-                    strncmp(funcStart, "cosh", funcLen) != 0 &&
-                    strncmp(funcStart, "tanh", funcLen) != 0 &&
-                    strncmp(funcStart, "log", funcLen) != 0 &&
-                    strncmp(funcStart, "ln", funcLen) != 0 &&
-                    strncmp(funcStart, "exp", funcLen) != 0 &&
-                    strncmp(funcStart, "abs", funcLen) != 0) {
-                    fprintf(stderr, "Error: Unknown function '%.*s'\n", (int)funcLen, funcStart);
-                    return 0;
-                }
-            }
-        } else if (!strchr("+-*/^() ", *p)) {
-            fprintf(stderr, "Error: Invalid character '%c'\n", *p);
-            return 0;
+    int paren_depth = 0;    // Hloubka závorek
+    int last_was_operator = 1;  // Příznak pro kontrolu po sobě jdoucích operátorů
+    int last_was_function = 0;  // Příznak pro kontrolu funkce
+    int last_was_number = 0;    // Příznak pro kontrolu čísla
+    const char *known_functions[] = {
+        "abs", "exp", "ln", "log", 
+        "sin", "cos", "tan", 
+        "asin", "acos", "atan", 
+        "sinh", "cosh", "tanh"
+    };
+    const int num_known_functions = sizeof(known_functions) / sizeof(known_functions[0]);
+
+    // Průchod výrazem znak po znaku
+    for (; *expr != '\0'; expr++) {
+        // Přeskočení bílých znaků
+        if (isspace(*expr)) continue;
+
+        // Kontrola proměnné x
+        if (*expr == 'x') {
+            last_was_operator = 0;
+            last_was_function = 0;
+            last_was_number = 0;
+            continue;
         }
-        p++;
-    }
-    
-    if (parenCount > 0) {
-        fprintf(stderr, "Error: Unmatched opening parenthesis\n");
+
+        // Kontrola závorek
+        if (*expr == '(') {
+            paren_depth++;
+            if (!last_was_operator && !last_was_function) return 0;
+            last_was_operator = 1;
+            last_was_function = 0;
+            last_was_number = 0;
+            continue;
+        }
+
+        if (*expr == ')') {
+            paren_depth--;
+            if (paren_depth < 0) return 0;
+            last_was_operator = 0;
+            last_was_function = 0;
+            last_was_number = 1;
+            continue;
+        }
+
+        // Kontrola operátorů
+        if (*expr == '+' || *expr == '-' || *expr == '*' || *expr == '/' || *expr == '^') {
+            // Unární mínus je povolen
+            if (*expr == '-' && ( *(expr-1) == '(' || *(expr-1) == '+' || 
+                                  *(expr-1) == '-' || *(expr-1) == '*' || 
+                                  *(expr-1) == '/' || *(expr-1) == '^')) {
+                last_was_operator = 1;
+                last_was_function = 0;
+                last_was_number = 0;
+                continue;
+            }
+
+            // Kontrola po sobě jdoucích operátorů (s výjimkou unárního mínus)
+            if (last_was_operator) return 0;
+            last_was_operator = 1;
+            last_was_function = 0;
+            last_was_number = 0;
+            continue;
+        }
+
+        // Kontrola funkcí
+        if (isalpha(*expr)) {
+            char function_name[10] = {0};
+            int func_len = 0;
+
+            // Načtení názvu funkce
+            while (isalpha(expr[func_len]) && func_len < 9) {
+                function_name[func_len] = expr[func_len];
+                func_len++;
+            }
+
+            // Kontrola, zda je funkce v seznamu povolených funkcí
+            int is_valid_function = 0;
+            for (int i = 0; i < num_known_functions; i++) {
+                if (strcmp(function_name, known_functions[i]) == 0) {
+                    is_valid_function = 1;
+                    break;
+                }
+            }
+
+            if (!is_valid_function) return 0;
+
+            // Kontrola, zda následuje otevírací závorka
+            expr += func_len - 1;
+            if (*(expr + 1) != '(') return 0;
+
+            last_was_operator = 0;
+            last_was_function = 1;
+            last_was_number = 0;
+            continue;
+        }
+
+        // Kontrola čísel (včetně vědeckého zápisu)
+        if (isdigit(*expr) || *expr == '.') {
+            char *endptr;
+            strtod(expr, &endptr);
+            
+            // Pokud není platné číslo, vrátí 0
+            if (expr == endptr) return 0;
+
+            // Přesun ukazatele na konec čísla
+            expr = endptr - 1;
+
+            // Kontrola opakovaných čísel bez operátoru
+            if (last_was_number) return 0;
+            last_was_operator = 0;
+            last_was_function = 0;
+            last_was_number = 1;
+            continue;
+        }
+
+        // Pokud znak neodpovídá žádné povolené kategorii, vrátí 0
         return 0;
     }
-    if (!hasValidChar || !hasX) {
-        fprintf(stderr, "Error: Expression must contain variable 'x' and valid mathematical operations\n");
-        return 0;
-    }
-    
+
+    // Závěrečné kontroly
+    // Všechny závorky musí být uzavřené
+    if (paren_depth != 0) return 0;
+    // Nesmí končit operátorem
+    if (last_was_operator) return 0;
+
     return 1;
 }
 
@@ -353,9 +405,15 @@ int main(int argc, char *argv[]) {
     }
     
     // Pro korektní výraz vypsání výsledků bez hlavičky
-    for (int x = -5; x <= 5; x++) {
+    int from = -20;
+    int to = 7;
+    int number_of_steps = 10;
+    double step = (double)(to - from) / number_of_steps;
+
+    double x;
+    for (x = from; x <= to; x += step) {
         double result = evaluateExpression(expr, x);
-        printf("%2d\t%.10g\n", x, result);
+        printf("%2.2f\t%.10g\n", x, result);
     }
 
     return 0;  // Korektní ukončení

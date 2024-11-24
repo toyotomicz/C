@@ -1,0 +1,184 @@
+%!PS-Adobe-3.0
+%Creator: Jiří Joska
+%Title: Graf matematické funkce
+%BoundingBox: 0 0 612 612
+%EndComments
+
+/margin 50 def
+/graphWidth 512 def
+/graphHeight 512 def
+/xScale 5.12 def
+/yScale 25.6 def
+gsave
+margin margin translate
+/Helvetica-Bold findfont 12 scalefont setfont
+
+% Draw graph background
+newpath
+0 0 moveto
+graphWidth 0 lineto
+graphWidth graphHeight lineto
+0 graphHeight lineto
+closepath
+0.95 setgray
+fill
+0 setgray
+
+% Draw grid lines
+0.8 setgray
+0.3 setlinewidth
+newpath
+0 0 moveto
+0 graphHeight lineto
+stroke
+newpath
+51.2 0 moveto
+51.2 graphHeight lineto
+stroke
+newpath
+102.4 0 moveto
+102.4 graphHeight lineto
+stroke
+newpath
+153.6 0 moveto
+153.6 graphHeight lineto
+stroke
+newpath
+204.8 0 moveto
+204.8 graphHeight lineto
+stroke
+newpath
+256 0 moveto
+256 graphHeight lineto
+stroke
+newpath
+307.2 0 moveto
+307.2 graphHeight lineto
+stroke
+newpath
+358.4 0 moveto
+358.4 graphHeight lineto
+stroke
+newpath
+409.6 0 moveto
+409.6 graphHeight lineto
+stroke
+newpath
+460.8 0 moveto
+460.8 graphHeight lineto
+stroke
+newpath
+512 0 moveto
+512 graphHeight lineto
+stroke
+newpath
+0 0 moveto
+graphWidth 0 lineto
+stroke
+newpath
+0 51.2 moveto
+graphWidth 51.2 lineto
+stroke
+newpath
+0 102.4 moveto
+graphWidth 102.4 lineto
+stroke
+newpath
+0 153.6 moveto
+graphWidth 153.6 lineto
+stroke
+newpath
+0 204.8 moveto
+graphWidth 204.8 lineto
+stroke
+newpath
+0 256 moveto
+graphWidth 256 lineto
+stroke
+newpath
+0 307.2 moveto
+graphWidth 307.2 lineto
+stroke
+newpath
+0 358.4 moveto
+graphWidth 358.4 lineto
+stroke
+newpath
+0 409.6 moveto
+graphWidth 409.6 lineto
+stroke
+newpath
+0 460.8 moveto
+graphWidth 460.8 lineto
+stroke
+newpath
+0 512 moveto
+graphWidth 512 lineto
+stroke
+% Draw axes
+0 setgray
+1.5 setlinewidth
+newpath
+0 0 moveto
+graphWidth 0 lineto
+0 0 moveto
+0 graphHeight lineto
+stroke
+
+% Draw axis labels
+/Helvetica findfont 10 scalefont setfont
+0 -15 moveto
+(0.00) dup stringwidth pop 2 div neg 0 rmoveto show
+51.2 -15 moveto
+(10.00) dup stringwidth pop 2 div neg 0 rmoveto show
+102.4 -15 moveto
+(20.00) dup stringwidth pop 2 div neg 0 rmoveto show
+153.6 -15 moveto
+(30.00) dup stringwidth pop 2 div neg 0 rmoveto show
+204.8 -15 moveto
+(40.00) dup stringwidth pop 2 div neg 0 rmoveto show
+256 -15 moveto
+(50.00) dup stringwidth pop 2 div neg 0 rmoveto show
+307.2 -15 moveto
+(60.00) dup stringwidth pop 2 div neg 0 rmoveto show
+358.4 -15 moveto
+(70.00) dup stringwidth pop 2 div neg 0 rmoveto show
+409.6 -15 moveto
+(80.00) dup stringwidth pop 2 div neg 0 rmoveto show
+460.8 -15 moveto
+(90.00) dup stringwidth pop 2 div neg 0 rmoveto show
+512 -15 moveto
+(100.00) dup stringwidth pop 2 div neg 0 rmoveto show
+-5 0 moveto
+(-10.00) dup stringwidth pop neg 0 rmoveto show
+-5 51.2 moveto
+(-8.00) dup stringwidth pop neg 0 rmoveto show
+-5 102.4 moveto
+(-6.00) dup stringwidth pop neg 0 rmoveto show
+-5 153.6 moveto
+(-4.00) dup stringwidth pop neg 0 rmoveto show
+-5 204.8 moveto
+(-2.00) dup stringwidth pop neg 0 rmoveto show
+-5 256 moveto
+(0.00) dup stringwidth pop neg 0 rmoveto show
+-5 307.2 moveto
+(2.00) dup stringwidth pop neg 0 rmoveto show
+-5 358.4 moveto
+(4.00) dup stringwidth pop neg 0 rmoveto show
+-5 409.6 moveto
+(6.00) dup stringwidth pop neg 0 rmoveto show
+-5 460.8 moveto
+(8.00) dup stringwidth pop neg 0 rmoveto show
+-5 512 moveto
+(10.00) dup stringwidth pop neg 0 rmoveto show
+% Draw axis titles
+/Helvetica-Bold findfont 12 scalefont setfont
+graphWidth 2 div -35 moveto
+(-> x) dup stringwidth pop 2 div neg 0 rmoveto show
+-35 graphHeight 2 div moveto
+90 rotate
+(-> f(x)) dup stringwidth pop 2 div neg 0 rmoveto show
+-90 rotate
+grestore
+showpage
+%EOF
