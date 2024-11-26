@@ -405,9 +405,9 @@ int main(int argc, char *argv[]) {
     }
     
     // Pro korektní výraz vypsání výsledků bez hlavičky
-    int from = -20;
-    int to = 7;
-    int number_of_steps = 10;
+    int from = -0;
+    int to = 100;
+    int number_of_steps = 100;
     double step = (double)(to - from) / number_of_steps;
 
     double x;
