@@ -43,8 +43,8 @@ int validate_graph_params(const GraphParams* params) {
 // Helper function to write PostScript header
 void write_ps_header(FILE* ps_file, const GraphParams* params) {
     fprintf(ps_file, "%%!PS-Adobe-3.0\n");
-    fprintf(ps_file, "%%Creator: Jiří Joska\n");
-    fprintf(ps_file, "%%Title: Graf matematické funkce\n");
+    fprintf(ps_file, "%%Creator: Sine Wave Graph Generator\n");
+    fprintf(ps_file, "%%Title: Sine Wave Graph\n");
     fprintf(ps_file, "%%BoundingBox: 0 0 %d %d\n", 
             params->width + 100,  // Add margins
             params->height + 100);
@@ -65,6 +65,35 @@ void setup_coordinate_system(FILE* ps_file, const GraphParams* params) {
             (x_range != 0) ? params->width / x_range : 1.0);
     fprintf(ps_file, "/yScale %g def\n", 
             (y_range != 0) ? params->height / y_range : 1.0);
+}
+
+void draw_function(FILE* ps_file, const GraphParams* params) {
+    fprintf(ps_file, "%% Draw Sine Function\n");
+    fprintf(ps_file, "0 0 1 setrgbcolor\n");  // Blue color
+    fprintf(ps_file, "1 setlinewidth\n");
+    fprintf(ps_file, "newpath\n");
+
+    // Calculate function points
+    for (int i = 0; i < 512; i++) {
+        // Map index to x value within graph's x range
+        double x = params->min_x + (params->max_x - params->min_x) * ((double)i / 511.0);
+        double y = log(x);
+
+        // Clamp y to specified y range
+        y = fmax(params->min_y, fmin(y, params->max_y));
+
+        // Convert x and y to graph coordinates
+        double graph_x = ((x - params->min_x) / (params->max_x - params->min_x)) * params->width;
+        double graph_y = ((y - params->min_y) / (params->max_y - params->min_y)) * params->height;
+
+        if (i == 0) {
+            fprintf(ps_file, "%g %g moveto\n", graph_x, graph_y);
+        } else {
+            fprintf(ps_file, "%g %g lineto\n", graph_x, graph_y);
+        }
+    }
+
+    fprintf(ps_file, "stroke\n\n");
 }
 
 int generate_postscript_graph(const GraphParams* params, const char* output_file) {
@@ -163,11 +192,14 @@ int generate_postscript_graph(const GraphParams* params, const char* output_file
     fprintf(ps_file, "%% Draw axis titles\n");
     fprintf(ps_file, "/Helvetica-Bold findfont 12 scalefont setfont\n");
     fprintf(ps_file, "graphWidth 2 div -35 moveto\n");
-    fprintf(ps_file, "(-> x) dup stringwidth pop 2 div neg 0 rmoveto show\n");
+    fprintf(ps_file, "(x) dup stringwidth pop 2 div neg 0 rmoveto show\n");
     fprintf(ps_file, "-35 graphHeight 2 div moveto\n");
     fprintf(ps_file, "90 rotate\n");
-    fprintf(ps_file, "(-> f(x)) dup stringwidth pop 2 div neg 0 rmoveto show\n");
+    fprintf(ps_file, "(f(x) = sin(x)) dup stringwidth pop 2 div neg 0 rmoveto show\n");
     fprintf(ps_file, "-90 rotate\n");
+
+    // Draw function
+    draw_function(ps_file, params);
 
     // End document
     fprintf(ps_file, "grestore\n");
@@ -193,25 +225,28 @@ void print_graph_error(int error_code) {
     }
 }
 
-// Example usage
 int main() {
+    // Configure graph parameters for sine wave
     GraphParams params = {
-        .min_x = 0.0,
-        .max_x = 100.0,
-        .min_y = -10.0,
-        .max_y = 10.0,
-        .width = 512,
-        .height = 512,
-        .x_divisions = 10,
-        .y_divisions = 10
+        .min_x = -10,            // Start at 0
+        .max_x = 10,     // One full period of sine wave
+        .min_y = -5,         // Slight margin below sine wave
+        .max_y = 5,          // Slight margin above sine wave
+        .width = 512,          // Wider graph for better visualization
+        .height = 512,         // Adjust height
+        .x_divisions = 10,     // Number of x-axis grid divisions
+        .y_divisions = 10       // Number of y-axis grid divisions
     };
 
+    // Generate the PostScript graph
     int result = generate_postscript_graph(&params, "graph.ps");
+    
+    // Check for errors
     if (result != 0) {
         print_graph_error(result);
         return EXIT_FAILURE;
     }
 
-    printf("Graph successfully generated to graph.ps\n");
+    printf("Sine wave graph successfully generated to graph.ps\n");
     return EXIT_SUCCESS;
 }

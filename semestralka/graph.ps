@@ -1,14 +1,14 @@
 %!PS-Adobe-3.0
-%Creator: Jiří Joska
-%Title: Graf matematické funkce
+%Creator: Sine Wave Graph Generator
+%Title: Sine Wave Graph
 %BoundingBox: 0 0 612 612
 %EndComments
 
 /margin 50 def
 /graphWidth 512 def
 /graphHeight 512 def
-/xScale 5.12 def
-/yScale 25.6 def
+/xScale 25.6 def
+/yScale 51.2 def
 gsave
 margin margin translate
 /Helvetica-Bold findfont 12 scalefont setfont
@@ -128,57 +128,575 @@ stroke
 % Draw axis labels
 /Helvetica findfont 10 scalefont setfont
 0 -15 moveto
-(0.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(-10.00) dup stringwidth pop 2 div neg 0 rmoveto show
 51.2 -15 moveto
-(10.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(-8.00) dup stringwidth pop 2 div neg 0 rmoveto show
 102.4 -15 moveto
-(20.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(-6.00) dup stringwidth pop 2 div neg 0 rmoveto show
 153.6 -15 moveto
-(30.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(-4.00) dup stringwidth pop 2 div neg 0 rmoveto show
 204.8 -15 moveto
-(40.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(-2.00) dup stringwidth pop 2 div neg 0 rmoveto show
 256 -15 moveto
-(50.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(0.00) dup stringwidth pop 2 div neg 0 rmoveto show
 307.2 -15 moveto
-(60.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(2.00) dup stringwidth pop 2 div neg 0 rmoveto show
 358.4 -15 moveto
-(70.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(4.00) dup stringwidth pop 2 div neg 0 rmoveto show
 409.6 -15 moveto
-(80.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(6.00) dup stringwidth pop 2 div neg 0 rmoveto show
 460.8 -15 moveto
-(90.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(8.00) dup stringwidth pop 2 div neg 0 rmoveto show
 512 -15 moveto
-(100.00) dup stringwidth pop 2 div neg 0 rmoveto show
+(10.00) dup stringwidth pop 2 div neg 0 rmoveto show
 -5 0 moveto
-(-10.00) dup stringwidth pop neg 0 rmoveto show
+(-5.00) dup stringwidth pop neg 0 rmoveto show
 -5 51.2 moveto
-(-8.00) dup stringwidth pop neg 0 rmoveto show
--5 102.4 moveto
-(-6.00) dup stringwidth pop neg 0 rmoveto show
--5 153.6 moveto
 (-4.00) dup stringwidth pop neg 0 rmoveto show
--5 204.8 moveto
+-5 102.4 moveto
+(-3.00) dup stringwidth pop neg 0 rmoveto show
+-5 153.6 moveto
 (-2.00) dup stringwidth pop neg 0 rmoveto show
+-5 204.8 moveto
+(-1.00) dup stringwidth pop neg 0 rmoveto show
 -5 256 moveto
 (0.00) dup stringwidth pop neg 0 rmoveto show
 -5 307.2 moveto
-(2.00) dup stringwidth pop neg 0 rmoveto show
+(1.00) dup stringwidth pop neg 0 rmoveto show
 -5 358.4 moveto
-(4.00) dup stringwidth pop neg 0 rmoveto show
+(2.00) dup stringwidth pop neg 0 rmoveto show
 -5 409.6 moveto
-(6.00) dup stringwidth pop neg 0 rmoveto show
+(3.00) dup stringwidth pop neg 0 rmoveto show
 -5 460.8 moveto
-(8.00) dup stringwidth pop neg 0 rmoveto show
+(4.00) dup stringwidth pop neg 0 rmoveto show
 -5 512 moveto
-(10.00) dup stringwidth pop neg 0 rmoveto show
+(5.00) dup stringwidth pop neg 0 rmoveto show
 % Draw axis titles
 /Helvetica-Bold findfont 12 scalefont setfont
 graphWidth 2 div -35 moveto
-(-> x) dup stringwidth pop 2 div neg 0 rmoveto show
+(x) dup stringwidth pop 2 div neg 0 rmoveto show
 -35 graphHeight 2 div moveto
 90 rotate
-(-> f(x)) dup stringwidth pop 2 div neg 0 rmoveto show
+(f(x) = sin(x)) dup stringwidth pop 2 div neg 0 rmoveto show
 -90 rotate
+% Draw Sine Function
+0 0 1 setrgbcolor
+1 setlinewidth
+newpath
+0 512 moveto
+1.00196 512 lineto
+2.00391 512 lineto
+3.00587 512 lineto
+4.00783 512 lineto
+5.00978 512 lineto
+6.01174 512 lineto
+7.0137 512 lineto
+8.01566 512 lineto
+9.01761 512 lineto
+10.0196 512 lineto
+11.0215 512 lineto
+12.0235 512 lineto
+13.0254 512 lineto
+14.0274 512 lineto
+15.0294 512 lineto
+16.0313 512 lineto
+17.0333 512 lineto
+18.0352 512 lineto
+19.0372 512 lineto
+20.0391 512 lineto
+21.0411 512 lineto
+22.0431 512 lineto
+23.045 512 lineto
+24.047 512 lineto
+25.0489 512 lineto
+26.0509 512 lineto
+27.0528 512 lineto
+28.0548 512 lineto
+29.0568 512 lineto
+30.0587 512 lineto
+31.0607 512 lineto
+32.0626 512 lineto
+33.0646 512 lineto
+34.0665 512 lineto
+35.0685 512 lineto
+36.0705 512 lineto
+37.0724 512 lineto
+38.0744 512 lineto
+39.0763 512 lineto
+40.0783 512 lineto
+41.0802 512 lineto
+42.0822 512 lineto
+43.0841 512 lineto
+44.0861 512 lineto
+45.0881 512 lineto
+46.09 512 lineto
+47.092 512 lineto
+48.0939 512 lineto
+49.0959 512 lineto
+50.0978 512 lineto
+51.0998 512 lineto
+52.1018 512 lineto
+53.1037 512 lineto
+54.1057 512 lineto
+55.1076 512 lineto
+56.1096 512 lineto
+57.1115 512 lineto
+58.1135 512 lineto
+59.1155 512 lineto
+60.1174 512 lineto
+61.1194 512 lineto
+62.1213 512 lineto
+63.1233 512 lineto
+64.1252 512 lineto
+65.1272 512 lineto
+66.1292 512 lineto
+67.1311 512 lineto
+68.1331 512 lineto
+69.135 512 lineto
+70.137 512 lineto
+71.1389 512 lineto
+72.1409 512 lineto
+73.1429 512 lineto
+74.1448 512 lineto
+75.1468 512 lineto
+76.1487 512 lineto
+77.1507 512 lineto
+78.1526 512 lineto
+79.1546 512 lineto
+80.1566 512 lineto
+81.1585 512 lineto
+82.1605 512 lineto
+83.1624 512 lineto
+84.1644 512 lineto
+85.1663 512 lineto
+86.1683 512 lineto
+87.1703 512 lineto
+88.1722 512 lineto
+89.1742 512 lineto
+90.1761 512 lineto
+91.1781 512 lineto
+92.18 512 lineto
+93.182 512 lineto
+94.184 512 lineto
+95.1859 512 lineto
+96.1879 512 lineto
+97.1898 512 lineto
+98.1918 512 lineto
+99.1937 512 lineto
+100.196 512 lineto
+101.198 512 lineto
+102.2 512 lineto
+103.202 512 lineto
+104.204 512 lineto
+105.205 512 lineto
+106.207 512 lineto
+107.209 512 lineto
+108.211 512 lineto
+109.213 512 lineto
+110.215 512 lineto
+111.217 512 lineto
+112.219 512 lineto
+113.221 512 lineto
+114.223 512 lineto
+115.225 512 lineto
+116.227 512 lineto
+117.229 512 lineto
+118.231 512 lineto
+119.233 512 lineto
+120.235 512 lineto
+121.237 512 lineto
+122.239 512 lineto
+123.241 512 lineto
+124.243 512 lineto
+125.245 512 lineto
+126.247 512 lineto
+127.249 512 lineto
+128.25 512 lineto
+129.252 512 lineto
+130.254 512 lineto
+131.256 512 lineto
+132.258 512 lineto
+133.26 512 lineto
+134.262 512 lineto
+135.264 512 lineto
+136.266 512 lineto
+137.268 512 lineto
+138.27 512 lineto
+139.272 512 lineto
+140.274 512 lineto
+141.276 512 lineto
+142.278 512 lineto
+143.28 512 lineto
+144.282 512 lineto
+145.284 512 lineto
+146.286 512 lineto
+147.288 512 lineto
+148.29 512 lineto
+149.292 512 lineto
+150.294 512 lineto
+151.295 512 lineto
+152.297 512 lineto
+153.299 512 lineto
+154.301 512 lineto
+155.303 512 lineto
+156.305 512 lineto
+157.307 512 lineto
+158.309 512 lineto
+159.311 512 lineto
+160.313 512 lineto
+161.315 512 lineto
+162.317 512 lineto
+163.319 512 lineto
+164.321 512 lineto
+165.323 512 lineto
+166.325 512 lineto
+167.327 512 lineto
+168.329 512 lineto
+169.331 512 lineto
+170.333 512 lineto
+171.335 512 lineto
+172.337 512 lineto
+173.339 512 lineto
+174.341 512 lineto
+175.342 512 lineto
+176.344 512 lineto
+177.346 512 lineto
+178.348 512 lineto
+179.35 512 lineto
+180.352 512 lineto
+181.354 512 lineto
+182.356 512 lineto
+183.358 512 lineto
+184.36 512 lineto
+185.362 512 lineto
+186.364 512 lineto
+187.366 512 lineto
+188.368 512 lineto
+189.37 512 lineto
+190.372 512 lineto
+191.374 512 lineto
+192.376 512 lineto
+193.378 512 lineto
+194.38 512 lineto
+195.382 512 lineto
+196.384 512 lineto
+197.386 512 lineto
+198.387 512 lineto
+199.389 512 lineto
+200.391 512 lineto
+201.393 512 lineto
+202.395 512 lineto
+203.397 512 lineto
+204.399 512 lineto
+205.401 512 lineto
+206.403 512 lineto
+207.405 512 lineto
+208.407 512 lineto
+209.409 512 lineto
+210.411 512 lineto
+211.413 512 lineto
+212.415 512 lineto
+213.417 512 lineto
+214.419 512 lineto
+215.421 512 lineto
+216.423 512 lineto
+217.425 512 lineto
+218.427 512 lineto
+219.429 512 lineto
+220.431 512 lineto
+221.432 512 lineto
+222.434 512 lineto
+223.436 512 lineto
+224.438 512 lineto
+225.44 512 lineto
+226.442 512 lineto
+227.444 512 lineto
+228.446 512 lineto
+229.448 512 lineto
+230.45 512 lineto
+231.452 512 lineto
+232.454 512 lineto
+233.456 512 lineto
+234.458 512 lineto
+235.46 512 lineto
+236.462 512 lineto
+237.464 512 lineto
+238.466 512 lineto
+239.468 512 lineto
+240.47 512 lineto
+241.472 512 lineto
+242.474 512 lineto
+243.476 512 lineto
+244.477 512 lineto
+245.479 512 lineto
+246.481 512 lineto
+247.483 512 lineto
+248.485 512 lineto
+249.487 512 lineto
+250.489 512 lineto
+251.491 512 lineto
+252.493 512 lineto
+253.495 512 lineto
+254.497 512 lineto
+255.499 512 lineto
+256.501 54.5902 lineto
+257.503 110.839 lineto
+258.505 136.993 lineto
+259.507 154.221 lineto
+260.509 167.088 lineto
+261.511 177.362 lineto
+262.513 185.916 lineto
+263.515 193.242 lineto
+264.517 199.651 lineto
+265.519 205.346 lineto
+266.521 210.47 lineto
+267.523 215.128 lineto
+268.524 219.397 lineto
+269.526 223.337 lineto
+270.528 226.996 lineto
+271.53 230.41 lineto
+272.532 233.611 lineto
+273.534 236.624 lineto
+274.536 239.469 lineto
+275.538 242.165 lineto
+276.54 244.725 lineto
+277.542 247.164 lineto
+278.544 249.491 lineto
+279.546 251.718 lineto
+280.548 253.851 lineto
+281.55 255.9 lineto
+282.552 257.869 lineto
+283.554 259.766 lineto
+284.556 261.594 lineto
+285.558 263.36 lineto
+286.56 265.067 lineto
+287.562 266.719 lineto
+288.564 268.319 lineto
+289.566 269.87 lineto
+290.568 271.376 lineto
+291.569 272.839 lineto
+292.571 274.262 lineto
+293.573 275.646 lineto
+294.575 276.993 lineto
+295.577 278.306 lineto
+296.579 279.586 lineto
+297.581 280.835 lineto
+298.583 282.054 lineto
+299.585 283.245 lineto
+300.587 284.408 lineto
+301.589 285.546 lineto
+302.591 286.659 lineto
+303.593 287.749 lineto
+304.595 288.815 lineto
+305.597 289.86 lineto
+306.599 290.884 lineto
+307.601 291.888 lineto
+308.603 292.873 lineto
+309.605 293.839 lineto
+310.607 294.787 lineto
+311.609 295.718 lineto
+312.611 296.632 lineto
+313.613 297.531 lineto
+314.614 298.414 lineto
+315.616 299.281 lineto
+316.618 300.135 lineto
+317.62 300.974 lineto
+318.622 301.8 lineto
+319.624 302.613 lineto
+320.626 303.413 lineto
+321.628 304.2 lineto
+322.63 304.976 lineto
+323.632 305.74 lineto
+324.634 306.493 lineto
+325.636 307.235 lineto
+326.638 307.967 lineto
+327.64 308.688 lineto
+328.642 309.399 lineto
+329.644 310.1 lineto
+330.646 310.792 lineto
+331.648 311.475 lineto
+332.65 312.149 lineto
+333.652 312.814 lineto
+334.654 313.47 lineto
+335.656 314.118 lineto
+336.658 314.758 lineto
+337.659 315.39 lineto
+338.661 316.015 lineto
+339.663 316.632 lineto
+340.665 317.241 lineto
+341.667 317.843 lineto
+342.669 318.439 lineto
+343.671 319.027 lineto
+344.673 319.609 lineto
+345.675 320.184 lineto
+346.677 320.753 lineto
+347.679 321.316 lineto
+348.681 321.872 lineto
+349.683 322.423 lineto
+350.685 322.968 lineto
+351.687 323.507 lineto
+352.689 324.04 lineto
+353.691 324.568 lineto
+354.693 325.09 lineto
+355.695 325.607 lineto
+356.697 326.119 lineto
+357.699 326.626 lineto
+358.701 327.128 lineto
+359.703 327.625 lineto
+360.705 328.118 lineto
+361.706 328.605 lineto
+362.708 329.088 lineto
+363.71 329.567 lineto
+364.712 330.041 lineto
+365.714 330.511 lineto
+366.716 330.976 lineto
+367.718 331.437 lineto
+368.72 331.895 lineto
+369.722 332.348 lineto
+370.724 332.797 lineto
+371.726 333.242 lineto
+372.728 333.683 lineto
+373.73 334.121 lineto
+374.732 334.555 lineto
+375.734 334.985 lineto
+376.736 335.412 lineto
+377.738 335.835 lineto
+378.74 336.255 lineto
+379.742 336.671 lineto
+380.744 337.084 lineto
+381.746 337.493 lineto
+382.748 337.9 lineto
+383.75 338.303 lineto
+384.751 338.703 lineto
+385.753 339.1 lineto
+386.755 339.494 lineto
+387.757 339.885 lineto
+388.759 340.272 lineto
+389.761 340.657 lineto
+390.763 341.039 lineto
+391.765 341.419 lineto
+392.767 341.795 lineto
+393.769 342.169 lineto
+394.771 342.54 lineto
+395.773 342.908 lineto
+396.775 343.274 lineto
+397.777 343.637 lineto
+398.779 343.998 lineto
+399.781 344.356 lineto
+400.783 344.711 lineto
+401.785 345.064 lineto
+402.787 345.415 lineto
+403.789 345.763 lineto
+404.791 346.109 lineto
+405.793 346.453 lineto
+406.795 346.794 lineto
+407.796 347.133 lineto
+408.798 347.47 lineto
+409.8 347.805 lineto
+410.802 348.137 lineto
+411.804 348.468 lineto
+412.806 348.796 lineto
+413.808 349.122 lineto
+414.81 349.446 lineto
+415.812 349.768 lineto
+416.814 350.088 lineto
+417.816 350.406 lineto
+418.818 350.722 lineto
+419.82 351.036 lineto
+420.822 351.348 lineto
+421.824 351.659 lineto
+422.826 351.967 lineto
+423.828 352.274 lineto
+424.83 352.578 lineto
+425.832 352.881 lineto
+426.834 353.183 lineto
+427.836 353.482 lineto
+428.838 353.78 lineto
+429.84 354.076 lineto
+430.841 354.37 lineto
+431.843 354.662 lineto
+432.845 354.953 lineto
+433.847 355.243 lineto
+434.849 355.53 lineto
+435.851 355.816 lineto
+436.853 356.101 lineto
+437.855 356.384 lineto
+438.857 356.665 lineto
+439.859 356.945 lineto
+440.861 357.223 lineto
+441.863 357.5 lineto
+442.865 357.775 lineto
+443.867 358.049 lineto
+444.869 358.321 lineto
+445.871 358.592 lineto
+446.873 358.862 lineto
+447.875 359.13 lineto
+448.877 359.396 lineto
+449.879 359.662 lineto
+450.881 359.925 lineto
+451.883 360.188 lineto
+452.885 360.449 lineto
+453.886 360.709 lineto
+454.888 360.968 lineto
+455.89 361.225 lineto
+456.892 361.481 lineto
+457.894 361.736 lineto
+458.896 361.989 lineto
+459.898 362.241 lineto
+460.9 362.492 lineto
+461.902 362.742 lineto
+462.904 362.991 lineto
+463.906 363.238 lineto
+464.908 363.484 lineto
+465.91 363.729 lineto
+466.912 363.973 lineto
+467.914 364.216 lineto
+468.916 364.457 lineto
+469.918 364.698 lineto
+470.92 364.937 lineto
+471.922 365.175 lineto
+472.924 365.412 lineto
+473.926 365.648 lineto
+474.928 365.883 lineto
+475.93 366.117 lineto
+476.932 366.349 lineto
+477.933 366.581 lineto
+478.935 366.812 lineto
+479.937 367.041 lineto
+480.939 367.27 lineto
+481.941 367.497 lineto
+482.943 367.724 lineto
+483.945 367.949 lineto
+484.947 368.174 lineto
+485.949 368.398 lineto
+486.951 368.62 lineto
+487.953 368.842 lineto
+488.955 369.063 lineto
+489.957 369.282 lineto
+490.959 369.501 lineto
+491.961 369.719 lineto
+492.963 369.936 lineto
+493.965 370.152 lineto
+494.967 370.367 lineto
+495.969 370.581 lineto
+496.971 370.795 lineto
+497.973 371.007 lineto
+498.975 371.219 lineto
+499.977 371.429 lineto
+500.978 371.639 lineto
+501.98 371.848 lineto
+502.982 372.056 lineto
+503.984 372.264 lineto
+504.986 372.47 lineto
+505.988 372.676 lineto
+506.99 372.88 lineto
+507.992 373.084 lineto
+508.994 373.288 lineto
+509.996 373.49 lineto
+510.998 373.692 lineto
+512 373.892 lineto
+stroke
+
 grestore
 showpage
 %EOF

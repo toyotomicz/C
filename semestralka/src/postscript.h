@@ -26,10 +26,10 @@ typedef struct {
     10.0,    /* max_x */ \
     -10.0,   /* min_y */ \
     10.0,    /* max_y */ \
-    100,     /* x_divisions */ \
+    10,     /* x_divisions */ \
     10,      /* y_divisions */ \
-    500,     /* width */ \
-    400      /* height */ \
+    512,     /* width */ \
+    512      /* height */ \
 }
 
 /**

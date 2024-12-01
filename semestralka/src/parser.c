@@ -383,38 +383,3 @@ int validateExpression(const char *expr) {
 
     return 1;
 }
-
-int main(int argc, char *argv[]) {
-    // Kontrola počtu parametrů
-    if (argc < 2) {
-        fprintf(stderr, "Error: Program requires exactly one parameter - the mathematical expression.\n");
-        fprintf(stderr, "Usage: %s \"expression\"\n", argv[0]);
-        return 1;  // Chybné parametry na příkazové řádce
-    }
-
-    const char *expr = argv[1];
-
-    // Kontrola syntaxe výrazu
-    if (!validateExpression(expr)) {
-        fprintf(stderr, "Error: Invalid mathematical expression. Expression must contain:\n");
-        fprintf(stderr, "- Exactly one variable 'x'\n");
-        fprintf(stderr, "- Valid operators (+, -, *, /, ^)\n");
-        fprintf(stderr, "- Valid numbers (including scientific notation)\n");
-        fprintf(stderr, "- Valid mathematical functions (sin, cos, tan, etc.)\n");
-        return 2;  // Neakceptovatelný zápis matematické funkce
-    }
-    
-    // Pro korektní výraz vypsání výsledků bez hlavičky
-    int from = -0;
-    int to = 100;
-    int number_of_steps = 100;
-    double step = (double)(to - from) / number_of_steps;
-
-    double x;
-    for (x = from; x <= to; x += step) {
-        double result = evaluateExpression(expr, x);
-        printf("%2.2f\t%.10g\n", x, result);
-    }
-
-    return 0;  // Korektní ukončení
-}
