@@ -256,6 +256,7 @@ void match(Parser *p, char expected) {
 
 /* Funkce pro validaci matematického výrazu */
 int validateExpression(const char *expr) {
+    printf("Validating expression: %s\n", expr);
     int paren_depth = 0;    // Hloubka závorek
     int last_was_operator = 1;  // Příznak pro kontrolu po sobě jdoucích operátorů
     int last_was_function = 0;  // Příznak pro kontrolu funkce

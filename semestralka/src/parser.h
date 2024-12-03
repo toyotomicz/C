@@ -1,34 +1,28 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <errno.h>
 
-/* Struktura pro uchovávání parseru */
+// Struct for parser context
 typedef struct {
-    const char *expr;
-    double x;
+    const char *expr; // Pointer to the current position in the expression
+    double x;         // Value of the variable 'x'
 } Parser;
 
-// Structure to hold x and y coordinate pairs
-typedef struct {
-    double x;
-    double y;
-} Point;
-
-/* Deklarace funkcí */
+// Function prototypes
 double evaluateExpression(const char *expr, double x);
 double parseExpression(Parser *p);
 double parseTerm(Parser *p);
 double parseFactor(Parser *p);
-double parseNumber(Parser *p);
 double parseFunction(Parser *p);
+double parseNumber(Parser *p);
 void skipWhitespace(Parser *p);
 void match(Parser *p, char expected);
-int isValidNumber(const char *expr);int validateExpression(const char *expr);
+int validateExpression(const char *expr);
 
-#endif /* PARSER_H */
+#endif // PARSER_H

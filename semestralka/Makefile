@@ -1,28 +1,41 @@
-# Kompilátor a příznaky
+# Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -ansi
+CFLAGS = -Wall -Wextra -Werror -g
+LDFLAGS = -lm
 
-# Cílový název programu
-TARGET = bin/program
+# Directories
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
 
-# Zdrojové soubory
-SRCDIR = src
-SRCS = $(SRCDIR)/main.c $(SRCDIR)/parser.c
-OBJS = $(SRCS:.c=.o)
+# Source files and object files
+SRC_FILES = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/stack/*.c)
+OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
+DEP_FILES = $(OBJ_FILES:.o=.d)
 
-# Pravidlo pro vytvoření cílového programu
-$(TARGET): $(OBJS) | bin
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) -lm
+# Output program
+PROGRAM = $(BIN_DIR)/program
 
-# Vytvoření bin adresáře pokud neexistuje
-bin:
-	mkdir -p bin
+# Default target
+all: $(PROGRAM)
 
-# Pravidlo pro kompilaci jednotlivých .c souborů
-$(SRCDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+# Rule to create the program
+$(PROGRAM): $(OBJ_FILES)
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(OBJ_FILES) -o $@ $(LDFLAGS)
+	@echo "Built $(PROGRAM)"
 
-# Vyčištění generovaných souborů
+# Rule to compile source files to object files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -MMD -c $< -o $@
+
+# Include dependency files
+-include $(DEP_FILES)
+
+# Clean target
 clean:
-	rm -f $(OBJS) $(TARGET)
-	rmdir bin 2>/dev/null || true
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+# Phony targets
+.PHONY: all clean

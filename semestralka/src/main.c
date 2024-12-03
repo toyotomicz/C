@@ -1,73 +1,73 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
-#include <float.h>
 #include "parser.h"
 #include "postscript.h"
 
-#define MAX_STEPS 1000
-
-// Structure to represent a result with validity
-typedef struct {
-    double x;
-    double result;
-    int is_valid;
-} ResultEntry;
-
 int main(int argc, char *argv[]) {
-    // Kontrola počtu parametrů
-    if (argc < 2) {
-        fprintf(stderr, "Error: Program requires exactly one parameter - the mathematical expression.\n");
-        fprintf(stderr, "Usage: %s \"expression\"\n", argv[0]);
+    // Kontrola minimálního počtu parametrů
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s <function> <output_file> [xmin:xmax:ymin:ymax]\n", argv[0]);
+        fprintf(stderr, "Example: %s \"sin(x^2)\" output.ps\n", argv[0]);
+        fprintf(stderr, "Example with limits: %s \"sin(x^2)\" output.ps -10:10:-1:1\n", argv[0]);
         return 1;
     }
 
-    const char *expr = argv[1];
-
-    // Kontrola syntaxe výrazu
-    if (!validateExpression(expr)) {
-        fprintf(stderr, "Error: Invalid mathematical expression.\n");
-        return 2;
-    }
+    // Parametry
+    const char *function = argv[1];
+    const char *output_file = argv[2];
     
-    int from = -5;
-    int to = 5;
-    int number_of_steps = 10;
-    double step = (double)(to - from) / number_of_steps;
+    // Defaultní rozsahy
+    double xmin = -10, xmax = 10, ymin = -10, ymax = 10;
 
-    // Alokace pole pro výsledky
-    ResultEntry *results = malloc(number_of_steps + 1 * sizeof(ResultEntry));
-    if (results == NULL) {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
-        return 3;
-    }
-
-    // Výpočet a uložení výsledků
-    for (int i = 0; i <= number_of_steps; i++) {
-        double x = from + i * step;
-        results[i].x = x;
-        
-        // Výpočet výsledku s kontrolou validity
-        double result = evaluateExpression(expr, x);
-        
-        // Kontrola validity výsledku
-        if (isfinite(result)) {
-            results[i].result = result;
-            results[i].is_valid = 1;
-            printf("%2.2f\t%.10g\n", x, result);
-        } else {
-            results[i].result = 0.0;
-            results[i].is_valid = 0;
-            printf("%2.2f\tNot Valid\n", x);
+    // Kontrola a parsování volitelného rozsahu
+    if (argc == 4) {
+        if (sscanf(argv[3], "%lf:%lf:%lf:%lf", &xmin, &xmax, &ymin, &ymax) != 4) {
+            fprintf(stderr, "Error: Invalid range format. Use xmin:xmax:ymin:ymax\n");
+            return 4;
         }
     }
 
-    // Zde můžete dále pracovat s polem results
+    // Validace funkce
+    if (!validateExpression(function)) {
+        fprintf(stderr, "Error: Invalid mathematical expression.\n");
+        return 2;
+    }
+
+    // Generování bodů pro graf
+    int num_points = 512; // Počet bodů
+    double *points = malloc(num_points * sizeof(double));
+    if (!points) {
+        fprintf(stderr, "Error: Memory allocation failed.\n");
+        return 5;
+    }
+
+    double step = (xmax - xmin) / (num_points - 1);
+    for (int i = 0; i < num_points; i++) {
+        double x = xmin + i * step;
+        points[i] = evaluateExpression(function, x); // Vyhodnotí funkci
+    }
+
+    // Nastavení parametrů grafu
+    GraphParams params = {
+        .min_x = xmin,
+        .max_x = xmax,
+        .min_y = ymin,
+        .max_y = ymax,
+        .width = 512,  // Šířka grafu v jednotkách
+        .height = 512, // Výška grafu v jednotkách
+        .x_divisions = 10,
+        .y_divisions = 10,
+        .points = points,
+        .num_points = num_points
+    };
+
+    // Volání funkce pro generování PostScript grafu
+    int result = generate_postscript_graph(&params, output_file);
+    if (result != 0) {
+        fprintf(stderr, "Error: Failed to generate PostScript graph. Code: %d\n", result);
+        free(points);
+        return 6;
+    }
 
     // Uvolnění paměti
-    free(results);
-
+    free(points);
     return 0;
 }
