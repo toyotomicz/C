@@ -1,0 +1,1 @@
+/usr/bin/c++  -Wall -Wextra -pedantic -g CMakeFiles/cpp_example.dir/src/main.cpp.o CMakeFiles/cpp_example.dir/src/units/wiffle.cpp.o CMakeFiles/cpp_example.dir/src/examples/examples.cpp.o -o cpp_example 
