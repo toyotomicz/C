@@ -14,8 +14,14 @@ typedef struct {
     double x;         // Value of the variable 'x'
 } Parser;
 
+typedef struct {
+    double value;
+    int is_defined;
+} EvaluationResult;
+
 // Function prototypes
-double evaluateExpression(const char *expr, double x);
+int isFunctionDefinedAtPoint(const char *funcName, double arg);
+EvaluationResult evaluateExpression(const char *expr, double x);
 double parseExpression(Parser *p);
 double parseTerm(Parser *p);
 double parseFactor(Parser *p);

@@ -1,9 +1,29 @@
 #include "parser.h"
 
 /* Funkce pro vyhodnocení matematického výrazu */
-double evaluateExpression(const char *expr, double x) {
+EvaluationResult evaluateExpression(const char *expr, double x) {
+    EvaluationResult result = {0, 1};  // Default to defined
+    
+    // Try to catch potential undefined points
+    errno = 0;
+    
     Parser parser = { expr, x };
-    return parseExpression(&parser);
+    
+    // Use a try-catch like approach with errno and specific checks
+    result.value = parseExpression(&parser);
+    
+    // Check for specific undefined conditions
+    if (errno == ERANGE) {
+        result.is_defined = 0;
+        errno = 0;
+    }
+    
+    // Additional specific checks for undefined points
+    if (isnan(result.value) || isinf(result.value)) {
+        result.is_defined = 0;
+    }
+    
+    return result;
 }
 
 /* Funkce pro parsování výrazu */
@@ -88,14 +108,14 @@ double parseFactor(Parser *p) {
 double parseFunction(Parser *p) {
     char funcName[10] = {0};
     int i = 0;
-    
-    // Načtení jména funkce
+
+    // Extract the function name
     while (isalpha(p->expr[i]) && i < 9) {
         funcName[i] = p->expr[i];
         i++;
     }
     p->expr += i;
-    
+
     skipWhitespace(p);
     match(p, '(');
     skipWhitespace(p);
@@ -103,64 +123,65 @@ double parseFunction(Parser *p) {
     skipWhitespace(p);
     match(p, ')');
 
-    // Goniometrické funkce
+    // Trigonometric functions
     if (strcmp(funcName, "sin") == 0) return sin(arg);
     if (strcmp(funcName, "cos") == 0) return cos(arg);
     if (strcmp(funcName, "tan") == 0) {
         if (cos(arg) == 0) {
-            fprintf(stderr, "Error: Tangent undefined at cos(x) = 0\n");
-            exit(2);
+            errno = ERANGE;
+            return NAN;  // Undefined tangent
         }
         return tan(arg);
     }
 
-    // Cyklometrické funkce
+    // Inverse trigonometric functions
     if (strcmp(funcName, "asin") == 0) {
         if (arg < -1 || arg > 1) {
-            fprintf(stderr, "Error: Arcsine defined only for values in [-1,1]\n");
-            exit(2);
+            errno = ERANGE;
+            return NAN;  // Undefined arcsine
         }
         return asin(arg);
     }
     if (strcmp(funcName, "acos") == 0) {
         if (arg < -1 || arg > 1) {
-            fprintf(stderr, "Error: Arccosine defined only for values in [-1,1]\n");
-            exit(2);
+            errno = ERANGE;
+            return NAN;  // Undefined arccosine
         }
         return acos(arg);
     }
     if (strcmp(funcName, "atan") == 0) return atan(arg);
 
-    // Hyperbolometrické funkce
-    if (strcmp(funcName, "sinh") == 0) return sinh(arg);
-    if (strcmp(funcName, "cosh") == 0) return cosh(arg);
-    if (strcmp(funcName, "tanh") == 0) return tanh(arg);
-
-    // Logaritmické funkce
+    // Logarithmic functions
     if (strcmp(funcName, "ln") == 0) {
         if (arg <= 0) {
-            fprintf(stderr, "Error: Natural logarithm undefined for values <= 0\n");
-            exit(2);
+            errno = ERANGE;
+            return NAN;  // Undefined natural logarithm
         }
         return log(arg);
     }
     if (strcmp(funcName, "log") == 0) {
         if (arg <= 0) {
-            fprintf(stderr, "Error: Logarithm undefined for values <= 0\n");
-            exit(2);
+            errno = ERANGE;
+            return NAN;  // Undefined base-10 logarithm
         }
         return log10(arg);
     }
 
-    // Exponenciální funkce
+    // Exponential functions
     if (strcmp(funcName, "exp") == 0) return exp(arg);
 
-    // Absolutní hodnota
+    // Hyperbolic functions
+    if (strcmp(funcName, "sinh") == 0) return sinh(arg);
+    if (strcmp(funcName, "cosh") == 0) return cosh(arg);
+    if (strcmp(funcName, "tanh") == 0) return tanh(arg);
+
+    // Absolute value
     if (strcmp(funcName, "abs") == 0) return fabs(arg);
 
     fprintf(stderr, "Error: Unknown function: %s\n", funcName);
     exit(2);
 }
+
 
 /* Funkce pro parsování čísel */
 double parseNumber(Parser *p) {
@@ -256,7 +277,6 @@ void match(Parser *p, char expected) {
 
 /* Funkce pro validaci matematického výrazu */
 int validateExpression(const char *expr) {
-    printf("Validating expression: %s\n", expr);
     int paren_depth = 0;    // Hloubka závorek
     int last_was_operator = 1;  // Příznak pro kontrolu po sobě jdoucích operátorů
     int last_was_function = 0;  // Příznak pro kontrolu funkce

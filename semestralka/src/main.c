@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stdbool.h>
 #include "parser.h"
 #include "postscript.h"
 
@@ -13,14 +17,14 @@ int main(int argc, char *argv[]) {
     // Parametry
     const char *function = argv[1];
     const char *output_file = argv[2];
-    
-    // Defaultní rozsahy
+
+    // Výchozí rozsahy
     double xmin = -10, xmax = 10, ymin = -10, ymax = 10;
 
     // Kontrola a parsování volitelného rozsahu
     if (argc == 4) {
-        if (sscanf(argv[3], "%lf:%lf:%lf:%lf", &xmin, &xmax, &ymin, &ymax) != 4) {
-            fprintf(stderr, "Error: Invalid range format. Use xmin:xmax:ymin:ymax\n");
+        if (sscanf(argv[3], "%lf:%lf:%lf:%lf", &xmin, &xmax, &ymin, &ymax) != 4 || xmin >= xmax || ymin >= ymax) {
+            fprintf(stderr, "Error: Invalid range format or logical range error. Use xmin:xmax:ymin:ymax and ensure xmin < xmax, ymin < ymax.\n");
             return 4;
         }
     }
@@ -31,6 +35,14 @@ int main(int argc, char *argv[]) {
         return 2;
     }
 
+    // Kontrola, zda lze vytvořit výstupní soubor
+    FILE *file = fopen(output_file, "w");
+    if (!file) {
+        fprintf(stderr, "Error: Cannot create or write to output file '%s'.\n", output_file);
+        return 3;
+    }
+    fclose(file); // Soubor zavíráme, aby byl použit později v PostScriptové funkci
+
     // Generování bodů pro graf
     int num_points = 512; // Počet bodů
     double *points = malloc(num_points * sizeof(double));
@@ -40,9 +52,21 @@ int main(int argc, char *argv[]) {
     }
 
     double step = (xmax - xmin) / (num_points - 1);
+    bool has_undefined_values = false; // Indikátor, zda funkce obsahuje nedefinované body
     for (int i = 0; i < num_points; i++) {
         double x = xmin + i * step;
-        points[i] = evaluateExpression(function, x); // Vyhodnotí funkci
+        EvaluationResult eval = evaluateExpression(function, x);
+        
+        if (eval.is_defined) {
+            points[i] = eval.value;
+        } else {
+            has_undefined_values = true;
+            points[i] = NAN; // Nastavení na NAN pro nedefinované hodnoty
+        }
+    }
+
+    if (has_undefined_values) {
+        fprintf(stderr, "Warning: The function contains undefined values in the given range.\n");
     }
 
     // Nastavení parametrů grafu

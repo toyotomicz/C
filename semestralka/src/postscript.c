@@ -173,7 +173,7 @@ void label_axes(FILE* ps_file, const GraphParams* params) {
         double y_value = params->min_y + (params->max_y - params->min_y) * ((double)i / params->y_divisions);
         generate_axis_label(label_buffer, sizeof(label_buffer), y_value);
         
-        fprintf(ps_file, "-30 %g moveto\n", y_pos);
+        fprintf(ps_file, "-10 %g moveto\n", y_pos);
         fprintf(ps_file, "(%s) dup stringwidth pop neg 0 rmoveto show\n", label_buffer);
     }
 
