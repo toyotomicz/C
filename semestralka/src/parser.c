@@ -1,7 +1,16 @@
 #include "parser.h"
 
+// List of known functions
+const char *KNOWN_FUNCTIONS[] = {
+    "abs", "exp", "ln", "log", 
+    "sin", "cos", "tan", 
+    "asin", "acos", "atan", 
+    "sinh", "cosh", "tanh"
+};
+const int NUM_KNOWN_FUNCTIONS = sizeof(KNOWN_FUNCTIONS) / sizeof(KNOWN_FUNCTIONS[0]);
+
 /* Funkce pro vyhodnocení matematického výrazu */
-EvaluationResult evaluateExpression(const char *expr, double x) {
+EvaluationResult evaluate_expression(const char *expr, double x) {
     EvaluationResult result = {0, 1};  // Default to defined
     
     // Try to catch potential undefined points
@@ -10,7 +19,7 @@ EvaluationResult evaluateExpression(const char *expr, double x) {
     Parser parser = { expr, x };
     
     // Use a try-catch like approach with errno and specific checks
-    result.value = parseExpression(&parser);
+    result.value = parse_expression(&parser);
     
     // Check for specific undefined conditions
     if (errno == ERANGE) {
@@ -27,77 +36,77 @@ EvaluationResult evaluateExpression(const char *expr, double x) {
 }
 
 /* Funkce pro parsování výrazu */
-double parseExpression(Parser *p) {
-    double result = parseTerm(p);
-    skipWhitespace(p);
+double parse_expression(Parser *p) {
+    double result = parse_term(p);
+    skip_whitespace(p);
     while (*p->expr == '+' || *p->expr == '-') {
         char op = *p->expr;
         match(p, op);
-        skipWhitespace(p);
+        skip_whitespace(p);
         if (op == '+') {
-            result += parseTerm(p);
+            result += parse_term(p);
         } else {
-            result -= parseTerm(p);
+            result -= parse_term(p);
         }
-        skipWhitespace(p);
+        skip_whitespace(p);
     }
     return result;
 }
 
 /* Funkce pro parsování termu */
-double parseTerm(Parser *p) {
-    double result = parseFactor(p);
-    skipWhitespace(p);
+double parse_term(Parser *p) {
+    double result = parse_factor(p);
+    skip_whitespace(p);
     while (*p->expr == '*' || *p->expr == '/') {
         char op = *p->expr;
         match(p, op);
-        skipWhitespace(p);
+        skip_whitespace(p);
         if (op == '*') {
-            result *= parseFactor(p);
+            result *= parse_factor(p);
         } else {
-            double divisor = parseFactor(p);
+            double divisor = parse_factor(p);
             if (divisor == 0) {
                 fprintf(stderr, "Error: Division by zero\n");
                 exit(2);
             }
             result /= divisor;
         }
-        skipWhitespace(p);
+        skip_whitespace(p);
     }
     return result;
 }
 
 /* Funkce pro parsování faktoru */
-double parseFactor(Parser *p) {
-    skipWhitespace(p);
+double parse_factor(Parser *p) {
+    skip_whitespace(p);
     double result;
 
     if (*p->expr == '(') {
         match(p, '(');
-        skipWhitespace(p);
-        result = parseExpression(p);
-        skipWhitespace(p);
+        skip_whitespace(p);
+        result = parse_expression(p);
+        skip_whitespace(p);
         match(p, ')');
     } else if (*p->expr == '-') {
         match(p, '-');
-        skipWhitespace(p);
-        result = -parseFactor(p);
+        skip_whitespace(p);
+        result = -parse_factor(p);
     } else if (isalpha(*p->expr)) {
         if (*p->expr == 'x') {
             match(p, 'x');
             result = p->x;
         } else {
-            result = parseFunction(p);
+            result = parse_function(p);
         }
     } else {
-        result = parseNumber(p);
+        result = parse_number(p);
     }
 
-    skipWhitespace(p);
+    skip_whitespace(p);
     if (*p->expr == '^') {
         match(p, '^');
-        skipWhitespace(p);
-        double exponent = parseFactor(p);
+        skip_whitespace(p);
+        double exponent = parse_factor(p);
         result = pow(result, exponent);
     }
 
@@ -105,7 +114,7 @@ double parseFactor(Parser *p) {
 }
 
 /* Funkce pro parsování matematických funkcí */
-double parseFunction(Parser *p) {
+double parse_function(Parser *p) {
     char funcName[10] = {0};
     int i = 0;
 
@@ -116,11 +125,11 @@ double parseFunction(Parser *p) {
     }
     p->expr += i;
 
-    skipWhitespace(p);
+    skip_whitespace(p);
     match(p, '(');
-    skipWhitespace(p);
-    double arg = parseExpression(p);
-    skipWhitespace(p);
+    skip_whitespace(p);
+    double arg = parse_expression(p);
+    skip_whitespace(p);
     match(p, ')');
 
     // Trigonometric functions
@@ -184,7 +193,7 @@ double parseFunction(Parser *p) {
 
 
 /* Funkce pro parsování čísel */
-double parseNumber(Parser *p) {
+double parse_number(Parser *p) {
     errno = 0;
 
     if (*p->expr == '.') {
@@ -254,7 +263,7 @@ double parseNumber(Parser *p) {
 }
 
 /* Funkce pro přeskočení bílých znaků */
-void skipWhitespace(Parser *p) {
+void skip_whitespace(Parser *p) {
     while (isspace(*p->expr)) {
         p->expr++;
     }
@@ -262,7 +271,7 @@ void skipWhitespace(Parser *p) {
 
 /* Funkce pro kontrolu očekávaného znaku */
 void match(Parser *p, char expected) {
-    skipWhitespace(p);
+    skip_whitespace(p);
     if (*p->expr == expected) {
         p->expr++;
     } else {
@@ -275,26 +284,69 @@ void match(Parser *p, char expected) {
     }
 }
 
-/* Funkce pro validaci matematického výrazu */
-int validateExpression(const char *expr) {
-    int paren_depth = 0;    // Hloubka závorek
-    int last_was_operator = 1;  // Příznak pro kontrolu po sobě jdoucích operátorů
-    int last_was_function = 0;  // Příznak pro kontrolu funkce
-    int last_was_number = 0;    // Příznak pro kontrolu čísla
-    const char *known_functions[] = {
-        "abs", "exp", "ln", "log", 
-        "sin", "cos", "tan", 
-        "asin", "acos", "atan", 
-        "sinh", "cosh", "tanh"
-    };
-    const int num_known_functions = sizeof(known_functions) / sizeof(known_functions[0]);
+// Check if a character is an operator
+int is_operator(char c) {
+    return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
+}
 
-    // Průchod výrazem znak po znaku
+// Check if a given function name is valid
+int is_valid_function(const char *func_name) {
+    for (int i = 0; i < NUM_KNOWN_FUNCTIONS; i++) {
+        if (strcmp(func_name, KNOWN_FUNCTIONS[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// Check if a minus sign is a unary minus
+int is_unary_minus(const char *expr, char current_char) {
+    return current_char == '-' && (
+        *(expr - 1) == '(' || *(expr - 1) == '+' || 
+        *(expr - 1) == '-' || *(expr - 1) == '*' || 
+        *(expr - 1) == '/' || *(expr - 1) == '^'
+    );
+}
+
+// Validate a number (including scientific notation)
+int validate_number(const char *expr, const char **end) {
+    char *endptr;
+    strtod(expr, &endptr);
+    
+    // If not a valid number, return 0
+    if (expr == endptr) return 0;
+    
+    *end = endptr;
+    return 1;
+}
+
+// Extract a function name
+int extract_function_name(const char *expr, char *function_name) {
+    int func_len = 0;
+    
+    // Read function name
+    while (isalpha(expr[func_len]) && func_len < 9) {
+        function_name[func_len] = expr[func_len];
+        func_len++;
+    }
+    function_name[func_len] = '\0';
+    
+    return func_len;
+}
+
+// Main validation function
+int validate_expression(const char *expr) {
+    int paren_depth = 0;
+    int last_was_operator = 1;
+    int last_was_function = 0;
+    int last_was_number = 0;
+
+    // Iterate through the expression
     for (; *expr != '\0'; expr++) {
-        // Přeskočení bílých znaků
+        // Skip whitespace
         if (isspace(*expr)) continue;
 
-        // Kontrola proměnné x
+        // Handle variable x
         if (*expr == 'x') {
             last_was_operator = 0;
             last_was_function = 0;
@@ -302,7 +354,7 @@ int validateExpression(const char *expr) {
             continue;
         }
 
-        // Kontrola závorek
+        // Handle parentheses
         if (*expr == '(') {
             paren_depth++;
             if (!last_was_operator && !last_was_function) return 0;
@@ -321,19 +373,17 @@ int validateExpression(const char *expr) {
             continue;
         }
 
-        // Kontrola operátorů
-        if (*expr == '+' || *expr == '-' || *expr == '*' || *expr == '/' || *expr == '^') {
-            // Unární mínus je povolen
-            if (*expr == '-' && ( *(expr-1) == '(' || *(expr-1) == '+' || 
-                                  *(expr-1) == '-' || *(expr-1) == '*' || 
-                                  *(expr-1) == '/' || *(expr-1) == '^')) {
+        // Handle operators
+        if (is_operator(*expr)) {
+            // Check for unary minus
+            if (is_unary_minus(expr, *expr)) {
                 last_was_operator = 1;
                 last_was_function = 0;
                 last_was_number = 0;
                 continue;
             }
 
-            // Kontrola po sobě jdoucích operátorů (s výjimkou unárního mínus)
+            // Check for consecutive operators
             if (last_was_operator) return 0;
             last_was_operator = 1;
             last_was_function = 0;
@@ -341,29 +391,15 @@ int validateExpression(const char *expr) {
             continue;
         }
 
-        // Kontrola funkcí
+        // Handle functions
         if (isalpha(*expr)) {
             char function_name[10] = {0};
-            int func_len = 0;
+            int func_len = extract_function_name(expr, function_name);
 
-            // Načtení názvu funkce
-            while (isalpha(expr[func_len]) && func_len < 9) {
-                function_name[func_len] = expr[func_len];
-                func_len++;
-            }
+            // Check if it's a valid function
+            if (!is_valid_function(function_name)) return 0;
 
-            // Kontrola, zda je funkce v seznamu povolených funkcí
-            int is_valid_function = 0;
-            for (int i = 0; i < num_known_functions; i++) {
-                if (strcmp(function_name, known_functions[i]) == 0) {
-                    is_valid_function = 1;
-                    break;
-                }
-            }
-
-            if (!is_valid_function) return 0;
-
-            // Kontrola, zda následuje otevírací závorka
+            // Check if followed by an opening parenthesis
             expr += func_len - 1;
             if (*(expr + 1) != '(') return 0;
 
@@ -373,18 +409,15 @@ int validateExpression(const char *expr) {
             continue;
         }
 
-        // Kontrola čísel (včetně vědeckého zápisu)
+        // Handle numbers
         if (isdigit(*expr) || *expr == '.') {
-            char *endptr;
-            strtod(expr, &endptr);
-            
-            // Pokud není platné číslo, vrátí 0
-            if (expr == endptr) return 0;
+            const char *number_end;
+            if (!validate_number(expr, &number_end)) return 0;
 
-            // Přesun ukazatele na konec čísla
-            expr = endptr - 1;
+            // Move pointer to end of number
+            expr = number_end - 1;
 
-            // Kontrola opakovaných čísel bez operátoru
+            // Check for consecutive numbers
             if (last_was_number) return 0;
             last_was_operator = 0;
             last_was_function = 0;
@@ -392,14 +425,14 @@ int validateExpression(const char *expr) {
             continue;
         }
 
-        // Pokud znak neodpovídá žádné povolené kategorii, vrátí 0
+        // If character doesn't match any allowed category
         return 0;
     }
 
-    // Závěrečné kontroly
-    // Všechny závorky musí být uzavřené
+    // Final checks
+    // All parentheses must be closed
     if (paren_depth != 0) return 0;
-    // Nesmí končit operátorem
+    // Cannot end with an operator
     if (last_was_operator) return 0;
 
     return 1;

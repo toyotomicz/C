@@ -1,0 +1,3 @@
+/home/jjoska/C/C/steganor/build/CMakeFiles/steganodecoder.dir
+/home/jjoska/C/C/steganor/build/CMakeFiles/edit_cache.dir
+/home/jjoska/C/C/steganor/build/CMakeFiles/rebuild_cache.dir

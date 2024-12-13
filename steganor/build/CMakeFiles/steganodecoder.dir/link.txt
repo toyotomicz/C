@@ -1,0 +1,1 @@
+/usr/bin/gcc -Wall -Wextra -pedantic -g CMakeFiles/steganodecoder.dir/src/decoder.c.o CMakeFiles/steganodecoder.dir/src/imgio.c.o -o steganodecoder 

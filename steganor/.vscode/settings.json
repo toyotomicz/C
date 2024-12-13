@@ -1,0 +1,8 @@
+{
+    "cmake.debugConfig": {
+        "args": [
+            "../data/very_ordinary_jungle.bmp",
+            "../data/jungle.bmp"
+        ]
+    }
+}

@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/jjoska/C/C/steganor/build",
+  "command": "/usr/bin/gcc   -Wall -Wextra -pedantic -g -o CMakeFiles/steganodecoder.dir/src/decoder.c.o -c /home/jjoska/C/C/steganor/src/decoder.c",
+  "file": "/home/jjoska/C/C/steganor/src/decoder.c",
+  "output": "CMakeFiles/steganodecoder.dir/src/decoder.c.o"
+},
+{
+  "directory": "/home/jjoska/C/C/steganor/build",
+  "command": "/usr/bin/gcc   -Wall -Wextra -pedantic -g -o CMakeFiles/steganodecoder.dir/src/imgio.c.o -c /home/jjoska/C/C/steganor/src/imgio.c",
+  "file": "/home/jjoska/C/C/steganor/src/imgio.c",
+  "output": "CMakeFiles/steganodecoder.dir/src/imgio.c.o"
+}
+]

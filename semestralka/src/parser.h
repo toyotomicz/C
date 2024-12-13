@@ -8,6 +8,10 @@
 #include <ctype.h>
 #include <errno.h>
 
+// Extern declarations for the known functions array
+extern const char *KNOWN_FUNCTIONS[];
+extern const int NUM_KNOWN_FUNCTIONS;
+
 // Struct for parser context
 typedef struct {
     const char *expr; // Pointer to the current position in the expression
@@ -19,16 +23,14 @@ typedef struct {
     int is_defined;
 } EvaluationResult;
 
-// Function prototypes
-int isFunctionDefinedAtPoint(const char *funcName, double arg);
-EvaluationResult evaluateExpression(const char *expr, double x);
-double parseExpression(Parser *p);
-double parseTerm(Parser *p);
-double parseFactor(Parser *p);
-double parseFunction(Parser *p);
-double parseNumber(Parser *p);
-void skipWhitespace(Parser *p);
+EvaluationResult evaluate_expression(const char *expr, double x);
+double parse_expression(Parser *p);
+double parse_term(Parser *p);
+double parse_factor(Parser *p);
+double parse_function(Parser *p);
+double parse_number(Parser *p);
+void skip_whitespace(Parser *p);
 void match(Parser *p, char expected);
-int validateExpression(const char *expr);
+int validate_expression(const char *expr);
 
 #endif // PARSER_H
