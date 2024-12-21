@@ -3,7 +3,7 @@
     Version 1.0
     Module parser.c
 
-    Comprehensive implementation of a mathematical expression parser 
+    Implementation of a mathematical expression parser 
     capable of processing complex expressions with various functions, 
     operators, and a single variable (x).
 
@@ -13,6 +13,12 @@
     - Single variable (x) support
     - Error handling and validation
     - Undefined point detection
+
+    Expression Grammar:
+    expression = term {("+"|"-") term}
+    term       = factor {("*"|"/") factor}
+    factor     = number | "x" | function "(" expression ")" | 
+                 "(" expression ")" | "-" factor | factor "^" factor
 
     Dialect: ANSI C
     Compiler: Any ANSI C-compatible compiler
@@ -87,20 +93,25 @@ EvaluationResult evaluate_expression(const char *expr, double x) {
    ____________________________________________________________________________
 */
 double parse_expression(Parser *p) {
-    double result = parse_term(p);
-    skip_whitespace(p);
+    double result = parse_term(p);  /* Parse the first term */
+    skip_whitespace(p);            /* Skip any whitespace after the term */
+
+    /* Process addition and subtraction operators. */
     while (*p->expr == '+' || *p->expr == '-') {
-        char op = *p->expr;
-        match(p, op);
-        skip_whitespace(p);
+        char op = *p->expr;         /* Get the current operator ('+' or '-') */
+        match(p, op);              /* Consume the operator and advance the parser */
+        skip_whitespace(p);        /* Skip any whitespace. */
+
         if (op == '+') {
-            result += parse_term(p);
+            result += parse_term(p); /* Add the next term */
         } else {
-            result -= parse_term(p);
+            result -= parse_term(p); /* Subtract the next term */
         }
-        skip_whitespace(p);
+
+        skip_whitespace(p);        /* Skip any whitespace after the operation */
     }
-    return result;
+
+    return result; /* Return the evaluated result of the expression */
 }
 
 /* ____________________________________________________________________________
@@ -114,25 +125,32 @@ double parse_expression(Parser *p) {
    ____________________________________________________________________________
 */
 double parse_term(Parser *p) {
-    double result = parse_factor(p);
-    skip_whitespace(p);
+    double result = parse_factor(p); /* Parse the first factor */
+    skip_whitespace(p);             /* Skip any whitespace after the factor */
+
+    /* Process multiplication and division operators */
     while (*p->expr == '*' || *p->expr == '/') {
-        char op = *p->expr;
-        match(p, op);
-        skip_whitespace(p);
+        char op = *p->expr;         /* Get the current operator ('*' or '/') */
+        match(p, op);              /* Consume the operator and advance the parser */
+        skip_whitespace(p);        /* Skip any whitespace. */
+
         if (op == '*') {
-            result *= parse_factor(p);
+            result *= parse_factor(p); /* Multiply by the next factor */
         } else {
-            double divisor = parse_factor(p);
+            double divisor = parse_factor(p); /* Parse the divisor */
+
             if (divisor == 0) {
                 fprintf(stderr, "Error: Division by zero\n");
-                exit(2);
+                exit(2); /* Terminate the program on division by zero */
             }
-            result /= divisor;
+
+            result /= divisor; /* Divide by the divisor */
         }
-        skip_whitespace(p);
+
+        skip_whitespace(p);        /* Skip any whitespace after the operation */
     }
-    return result;
+
+    return result; /* Return the evaluated result of the term */
 }
 
 /* ____________________________________________________________________________
@@ -147,39 +165,45 @@ double parse_term(Parser *p) {
    ____________________________________________________________________________
 */
 double parse_factor(Parser *p) {
-    skip_whitespace(p);
+    skip_whitespace(p); /* Skip any leading whitespace */
     double result;
 
     if (*p->expr == '(') {
+        /* Handle expressions within parentheses */
         match(p, '(');
         skip_whitespace(p);
-        result = parse_expression(p);
+        result = parse_expression(p); /* Recursively parse the inner expression */
         skip_whitespace(p);
         match(p, ')');
     } else if (*p->expr == '-') {
+        /* Handle negation */
         match(p, '-');
         skip_whitespace(p);
-        result = -parse_factor(p);
+        result = -parse_factor(p); /* Negate the result of the next factor */
     } else if (isalpha(*p->expr)) {
+        /* Handle variables or functions */
         if (*p->expr == 'x') {
             match(p, 'x');
-            result = p->x;
+            result = p->x; /* Retrieve the value of the variable 'x' */
         } else {
-            result = parse_function(p);
+            result = parse_function(p); /* Parse and evaluate the function */
         }
     } else {
+        /* Parse a numeric value */
         result = parse_number(p);
     }
 
-    skip_whitespace(p);
+    skip_whitespace(p); /* Skip any whitespace */
+
     if (*p->expr == '^') {
+        /* Handle exponentiation */
         match(p, '^');
         skip_whitespace(p);
-        double exponent = parse_factor(p);
-        result = pow(result, exponent);
+        double exponent = parse_factor(p); /* Parse the exponent */
+        result = pow(result, exponent);    /* Raise the base to the exponent */
     }
 
-    return result;
+    return result; /* Return the evaluated result of the factor */
 }
 
 /* ____________________________________________________________________________
@@ -196,80 +220,75 @@ double parse_factor(Parser *p) {
    ____________________________________________________________________________
 */
 double parse_function(Parser *p) {
-    char funcName[10] = {0};
+    char funcName[10] = {0}; /* Buffer to store the function name */
     int i = 0;
 
-    /* Extract the function name */
+    /* Extract the function name from the expression */
     while (isalpha(p->expr[i]) && i < 9) {
         funcName[i] = p->expr[i];
         i++;
     }
-    p->expr += i;
+    p->expr += i; /* Advance the parser past the function name */
 
+    skip_whitespace(p); /* Skip any whitespace */
+    match(p, '(');     /* Match the opening parenthesis of the function argument */
     skip_whitespace(p);
-    match(p, '(');
+    double arg = parse_expression(p); /* Parse the function argument */
     skip_whitespace(p);
-    double arg = parse_expression(p);
-    skip_whitespace(p);
-    match(p, ')');
+    match(p, ')');     /* Match the closing parenthesis */
 
-    /* Trigonometric functions */
+    /* Handle known mathematical functions */
     if (strcmp(funcName, "sin") == 0) return sin(arg);
     if (strcmp(funcName, "cos") == 0) return cos(arg);
     if (strcmp(funcName, "tan") == 0) {
         if (cos(arg) == 0) {
             errno = ERANGE;
-            return NAN;  /* Undefined tangent */
+            return NAN; /* Undefined tangent */
         }
         return tan(arg);
     }
 
-    /* Inverse trigonometric functions */
     if (strcmp(funcName, "asin") == 0) {
         if (arg < -1 || arg > 1) {
             errno = ERANGE;
-            return NAN;  /* Undefined arcsine */
+            return NAN; /* Undefined arcsine */
         }
         return asin(arg);
     }
     if (strcmp(funcName, "acos") == 0) {
         if (arg < -1 || arg > 1) {
             errno = ERANGE;
-            return NAN;  /* Undefined arccosine */
+            return NAN; /* Undefined arccosine */
         }
         return acos(arg);
     }
     if (strcmp(funcName, "atan") == 0) return atan(arg);
 
-    /* Logarithmic functions */ 
     if (strcmp(funcName, "ln") == 0) {
         if (arg <= 0) {
             errno = ERANGE;
-            return NAN;  /* Undefined natural logarithm */
+            return NAN; /* Undefined natural logarithm */
         }
         return log(arg);
     }
     if (strcmp(funcName, "log") == 0) {
         if (arg <= 0) {
             errno = ERANGE;
-            return NAN;  /* Undefined base-10 logarithm */
+            return NAN; /* Undefined base-10 logarithm */
         }
         return log10(arg);
     }
 
-    /* Exponential function */
     if (strcmp(funcName, "exp") == 0) return exp(arg);
 
-    /* Hyperbolic functions */
     if (strcmp(funcName, "sinh") == 0) return sinh(arg);
     if (strcmp(funcName, "cosh") == 0) return cosh(arg);
     if (strcmp(funcName, "tanh") == 0) return tanh(arg);
 
-    /* Absolute value */
     if (strcmp(funcName, "abs") == 0) return fabs(arg);
 
     fprintf(stderr, "Error: Unknown function: %s\n", funcName);
-    exit(2);
+    exit(2); /* Terminate the program for an unknown function */
 }
 
 
@@ -349,7 +368,7 @@ double parse_number(Parser *p) {
         Checks for:
         - Multiple exponential notations
         - Multiple decimal points
-     */
+    */
     int hasE = 0;  /* Exponential notation flag */
     int hasDot = 0;  /* Decimal point flag */
     while (original < endPtr) {
@@ -400,16 +419,19 @@ void skip_whitespace(Parser *p) {
    ____________________________________________________________________________
 */
 void match(Parser *p, char expected) {
-    skip_whitespace(p);
+    skip_whitespace(p); /* Skip any leading whitespace */
+
     if (*p->expr == expected) {
-        p->expr++;
+        p->expr++; /* Advance the parser past the matched character */
     } else {
         if (*p->expr == '\0') {
+            /* Handle end-of-expression error */
             fprintf(stderr, "Error: Expected '%c', found end of expression\n", expected);
         } else {
+            /* Handle mismatched character error */
             fprintf(stderr, "Error: Expected '%c', found '%c'\n", expected, *p->expr);
         }
-        exit(2);
+        exit(2); /* Terminate the program on error */
     }
 }
 
@@ -441,10 +463,10 @@ int is_operator(char c) {
 int is_valid_function(const char *func_name) {
     for (int i = 0; i < NUM_KNOWN_FUNCTIONS; i++) {
         if (strcmp(func_name, KNOWN_FUNCTIONS[i]) == 0) {
-            return 1;
+            return 1; /* Function name is valid */
         }
     }
-    return 0;
+    return 0; /* Function name is invalid */
 }
 
 /* ____________________________________________________________________________

@@ -14,12 +14,19 @@
     - Error handling and validation
     - Undefined point detection
 
+    Expression Grammar:
+    expression = term {("+"|"-") term}
+    term       = factor {("*"|"/") factor}
+    factor     = number | "x" | function "(" expression ")" | 
+                 "(" expression ")" | "-" factor | factor "^" factor
+
     Dialect: ANSI C
     Compiler: Any ANSI C-compatible compiler
 
     Copyright (c) Jiří Joska, 2024
     Provided "AS IS" with NO WARRANTY OF ANY KIND
 */
+
 #ifndef PARSER_H
 #define PARSER_H
 
