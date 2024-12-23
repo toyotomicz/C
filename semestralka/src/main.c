@@ -25,8 +25,10 @@
 #include "postscript.h" /* PostScript graph generation utilities */
 
 /* Function prototypes */
-void trim_spaces(char *dest, const char *src);
-void combine_args(char *buffer, int argc, char *argv[]);
+int parse_command_args(int argc, char *argv[], 
+                      char *function, char **output_file,
+                      double *xmin, double *xmax, 
+                      double *ymin, double *ymax);
 
 /* ____________________________________________________________________________
  
@@ -35,46 +37,28 @@ void combine_args(char *buffer, int argc, char *argv[]);
 */
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
-        /* Validate minimum number of arguments */
-        fprintf(stderr, "Usage: %s <function> <output_file> [xmin:xmax:ymin:ymax]\n", argv[0]);
-        fprintf(stderr, "Example: %s \"sin(x^2)\" output.ps\n", argv[0]);
-        fprintf(stderr, "Example with limits: %s \"sin(x^2)\" output.ps -10:10:-1:1\n", argv[0]);
-        return 1; /* Exit code for insufficient arguments */
-    }
+    char function[1024];
+    char *output_file;
+    double xmin, xmax, ymin, ymax;
 
-    /* Retrieve and process the mathematical function */
-    char function_buffer[1024];
-    combine_args(function_buffer, argc - 1, argv);
-    char function_trimmed[1024];
-    trim_spaces(function_trimmed, function_buffer);
-
-    const char *function = function_trimmed;
-    const char *output_file = argv[argc - 1];
-
-    /* Set default graph range */
-    double xmin = -10, xmax = 10, ymin = -10, ymax = 10;
-
-    /* Parse optional range argument */
-    if (argc >= 4 && sscanf(argv[argc - 1], "%lf:%lf:%lf:%lf", &xmin, &xmax, &ymin, &ymax) == 4) {
-        argc--; /* Adjust argc to account for range argument */
-    }
-    if (xmin >= xmax || ymin >= ymax) {
-        fprintf(stderr, "Error: Invalid range format or logical range error. Use xmin:xmax:ymin:ymax and ensure xmin < xmax, ymin < ymax.\n");
-        return 4; /* Exit code for invalid range */
+    /* Parse command line arguments */
+    int parse_result = parse_command_args(argc, argv, function, &output_file,
+                                        &xmin, &xmax, &ymin, &ymax);
+    if (parse_result != 0) {
+        return parse_result;
     }
 
     /* Validate the provided mathematical expression */
     if (!validate_expression(function)) {
         fprintf(stderr, "Error: Invalid mathematical expression.\n");
-        return 2; /* Exit code for invalid expression */
+        return 2;
     }
 
     /* Ensure the output file is writable */
     FILE *file = fopen(output_file, "w");
     if (!file) {
         fprintf(stderr, "Error: Cannot create or write to output file '%s'.\n", output_file);
-        return 3; /* Exit code for file I/O error */
+        return 3;
     }
     fclose(file);
 
@@ -83,21 +67,22 @@ int main(int argc, char *argv[]) {
     double *points = malloc(num_points * sizeof(double));
     if (!points) {
         fprintf(stderr, "Error: Memory allocation failed.\n");
-        return 5; /* Exit code for memory allocation failure */
+        return 5;
     }
 
     /* Generate graph points by evaluating the function */
     double step = (xmax - xmin) / (num_points - 1);
     bool has_undefined_values = false;
 
-    for (int i = 0; i < num_points; i++) {
+    int i;
+    for (i = 0; i < num_points; i++) {
         double x = xmin + i * step;
         EvaluationResult eval = evaluate_expression(function, x);
         if (eval.is_defined) {
             points[i] = eval.value;
         } else {
             has_undefined_values = true;
-            points[i] = NAN; /* Undefined values are set to NaN */
+            points[i] = 0.f / 0.f; /* NaN for undefined values, 0.f / 0.f is a trick in ANSI C to get NaN value */
         }
     }
 
@@ -124,7 +109,7 @@ int main(int argc, char *argv[]) {
     if (result != 0) {
         fprintf(stderr, "Error: Failed to generate PostScript graph. Code: %d\n", result);
         free(points);
-        return 6; /* Exit code for graph generation failure */
+        return 6;
     }
 
     /* Free allocated memory and exit */
@@ -133,43 +118,128 @@ int main(int argc, char *argv[]) {
 }
 
 /* ____________________________________________________________________________
-    trim_spaces
+    parse_command_args
 
-    Removes all whitespace characters (spaces and tabs) from the source string
-    and stores the result in the destination buffer.
+    Parses command line arguments, handling both quoted and unquoted mathematical
+    functions. If the function is unquoted, it must not contain whitespace.
+    If it is quoted, whitespace is allowed.
 
     Parameters:
-        dest - Destination buffer for the trimmed string
-        src  - Source string to trim
+        argc        - Number of command-line arguments
+        argv        - Array of command-line arguments
+        function    - Buffer to store the parsed function
+        output_file - Buffer to store the output file path
+        xmin, xmax, ymin, ymax - Pointers to store the range values
+        
+    Returns:
+        0 on success, error code on failure
    ____________________________________________________________________________
 */
-void trim_spaces(char *dest, const char *src) {
-    while (*src) {
-        if (*src != ' ' && *src != '\t') {
-            *dest++ = *src;
+int parse_command_args(int argc, char *argv[], 
+                      char *function, char **output_file,
+                      double *xmin, double *xmax, 
+                      double *ymin, double *ymax) {
+    /* Verify minimum required arguments (program name, function, output file) */
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s <function> <output_file> [xmin:xmax:ymin:ymax]\n", argv[0]);
+        fprintf(stderr, "Example: %s \"sin(x^2)\" output.ps\n", argv[0]);
+        fprintf(stderr, "Example with limits: %s \"sin(x^2)\" output.ps -10:10:-1:1\n", argv[0]);
+        fprintf(stderr, "Note: Quotes are optional if function contains no spaces\n");
+        return 1;
+    }
+
+    /* Set default plotting range values */
+    *xmin = -10;
+    *xmax = 10;
+    *ymin = -10;
+    *ymax = 10;
+
+    /* Get first argument which should contain the function or start of function */
+    const char *first_arg = argv[1];
+
+    /* Check if the function is quoted (starts with ") */
+    if (first_arg[0] == '"') {
+        /* 
+            Handle quoted function case
+            Need to combine arguments until we find closing quote
+            This allows functions with spaces like "sin ( x )"
+        */
+        char buffer[1024] = "";             /* Buffer to store combined function */
+        int arg_index = 1;                  /* Current argument being processed */
+        bool found_closing_quote = false;   /* Flag for tracking if we found closing quote */
+
+        /* Process arguments until we find closing quote or run out of args */
+        while (arg_index < argc - 1) { /* -1 ensures space for output_file */
+            const char *current_arg = argv[arg_index];
+            size_t arg_len = strlen(current_arg);
+
+            /* Check if current argument contains closing quote */
+            if (current_arg[arg_len - 1] == '"') {
+                /* 
+                    Found closing quote
+                    If this is first argument (arg_index == 1), need to skip opening quote
+                    Always need to skip closing quote
+                */
+                strncat(buffer, current_arg + (arg_index == 1 ? 1 : 0), 
+                       arg_len - (arg_index == 1 ? 2 : 1));
+                found_closing_quote = true;
+                arg_index++;
+                break;
+            } else if (arg_index == 1) {
+                /* First argument - skip opening quote and add space */
+                strcat(buffer, current_arg + 1);
+                strcat(buffer, " ");
+            } else {
+                /* Middle argument - add whole argument and space */
+                strcat(buffer, current_arg);
+                strcat(buffer, " ");
+            }
+            arg_index++;
         }
-        src++;
+
+        /* Verify we found closing quote */
+        if (!found_closing_quote) {
+            fprintf(stderr, "Error: Missing closing quote in function argument\n");
+            return 1;
+        }
+
+        /* Store processed function and output file */
+        strcpy(function, buffer);
+        *output_file = argv[arg_index];
+
+        /* Check for optional range argument after output file */
+        if (arg_index + 1 < argc) {
+            /* Try to parse range in format xmin:xmax:ymin:ymax */
+            if (sscanf(argv[arg_index + 1], "%lf:%lf:%lf:%lf", 
+                      xmin, xmax, ymin, ymax) != 4) {
+                fprintf(stderr, "Error: Invalid range format. Use xmin:xmax:ymin:ymax\n");
+                return 1;
+            }
+        }
+    } else {
+        /* 
+            Handle unquoted function case
+            Function must be a single argument without spaces
+        */
+        strcpy(function, first_arg);
+        *output_file = argv[2];
+
+        /* Check for optional range argument */
+        if (argc > 3) {
+            /* Try to parse range in format xmin:xmax:ymin:ymax */
+            if (sscanf(argv[3], "%lf:%lf:%lf:%lf", 
+                      xmin, xmax, ymin, ymax) != 4) {
+                fprintf(stderr, "Error: Invalid range format. Use xmin:xmax:ymin:ymax\n");
+                return 1;
+            }
+        }
     }
-    *dest = '\0'; /* Null-terminate the destination string */
-}
 
-/* ____________________________________________________________________________
-    combine_args
-
-    Combines all arguments from index 1 to (argc - 2) into a single string buffer, 
-    separating them with spaces.
-
-    Parameters:
-        buffer - Destination buffer for the combined arguments
-        argc   - Number of command-line arguments
-        argv   - Array of command-line arguments
-   ____________________________________________________________________________
-*/
-void combine_args(char *buffer, int argc, char *argv[]) {
-    buffer[0] = '\0'; /* Initialize buffer as an empty string */
-    for (int i = 1; i < argc - 1; i++) { /* Combine all arguments except the last */
-        strcat(buffer, argv[i]);
-        strcat(buffer, " ");
+    /* Validate that min values are less than max values */
+    if (*xmin >= *xmax || *ymin >= *ymax) {
+        fprintf(stderr, "Error: Invalid range values. Ensure xmin < xmax and ymin < ymax\n");
+        return 1;
     }
-    strcat(buffer, argv[argc - 1]); /* Add the last argument */
+
+    return 0; /* Success */
 }

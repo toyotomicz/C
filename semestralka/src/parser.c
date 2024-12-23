@@ -62,7 +62,6 @@ EvaluationResult evaluate_expression(const char *expr, double x) {
     
     /* Try to catch potential undefined points */
     errno = 0;
-    
     Parser parser = { expr, x };
     
     /* Use a try-catch like approach with errno and specific checks */
@@ -74,8 +73,8 @@ EvaluationResult evaluate_expression(const char *expr, double x) {
         errno = 0;
     }
     
-    /* Additional specific checks for undefined points */
-    if (isnan(result.value) || isinf(result.value)) {
+    /* Check for infinity */
+    if (result.value == HUGE_VAL || result.value == -HUGE_VAL) {
         result.is_defined = 0;
     }
     
@@ -243,7 +242,7 @@ double parse_function(Parser *p) {
     if (strcmp(funcName, "tan") == 0) {
         if (cos(arg) == 0) {
             errno = ERANGE;
-            return NAN; /* Undefined tangent */
+            return HUGE_VAL; /* Undefined tangent */
         }
         return tan(arg);
     }
@@ -251,14 +250,14 @@ double parse_function(Parser *p) {
     if (strcmp(funcName, "asin") == 0) {
         if (arg < -1 || arg > 1) {
             errno = ERANGE;
-            return NAN; /* Undefined arcsine */
+            return HUGE_VAL; /* Undefined arcsine */
         }
         return asin(arg);
     }
     if (strcmp(funcName, "acos") == 0) {
         if (arg < -1 || arg > 1) {
             errno = ERANGE;
-            return NAN; /* Undefined arccosine */
+            return HUGE_VAL; /* Undefined arccosine */
         }
         return acos(arg);
     }
@@ -267,14 +266,14 @@ double parse_function(Parser *p) {
     if (strcmp(funcName, "ln") == 0) {
         if (arg <= 0) {
             errno = ERANGE;
-            return NAN; /* Undefined natural logarithm */
+            return HUGE_VAL; /* Undefined natural logarithm */
         }
         return log(arg);
     }
     if (strcmp(funcName, "log") == 0) {
         if (arg <= 0) {
             errno = ERANGE;
-            return NAN; /* Undefined base-10 logarithm */
+            return HUGE_VAL; /* Undefined base-10 logarithm */
         }
         return log10(arg);
     }
@@ -461,7 +460,8 @@ int is_operator(char c) {
    ____________________________________________________________________________
 */
 int is_valid_function(const char *func_name) {
-    for (int i = 0; i < NUM_KNOWN_FUNCTIONS; i++) {
+    int i;
+    for (i = 0; i < NUM_KNOWN_FUNCTIONS; i++) {
         if (strcmp(func_name, KNOWN_FUNCTIONS[i]) == 0) {
             return 1; /* Function name is valid */
         }

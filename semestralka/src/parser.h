@@ -36,6 +36,7 @@
 #include <string.h>  /* String manipulation functions */
 #include <ctype.h>   /* Character type functions */
 #include <errno.h>   /* Error number definitions */
+#include <stdio.h>
 
 /*
   Array of supported mathematical function names.
