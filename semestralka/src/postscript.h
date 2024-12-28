@@ -1,14 +1,3 @@
-/* postscript.h */
-
-#ifndef POSTSCRIPT_GRAPH_H
-#define POSTSCRIPT_GRAPH_H
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <float.h>
-
 /* ____________________________________________________________________________
     PostScript Graph Generator
     Version 1.0
@@ -34,6 +23,17 @@
     - Requires write access to output directory
     - Memory requirements scale with number of points
 ____________________________________________________________________________ */
+
+#ifndef POSTSCRIPT_GRAPH_H
+#define POSTSCRIPT_GRAPH_H
+
+#include <stdio.h>   /* Input and output functions */
+#include <stdlib.h>  /* Standard library utilities */
+#include <string.h>  /* String manipulation functions */
+#include <math.h>    /* Mathematical functions */
+#include <float.h>   /* Defines limits for floating-point numbers */
+
+
 
 /* Error codes for diagnostic purposes */
 #define ERROR_INVALID_PARAMS     -1  /* Invalid parameter values provided */

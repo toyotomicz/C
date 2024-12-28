@@ -3,7 +3,7 @@
     Version 1.0
     Header parser.h
 
-    Comprehensive implementation of a mathematical expression parser 
+    Implementation of a mathematical expression parser 
     capable of processing complex expressions with various functions, 
     operators, and a single variable (x).
 
@@ -18,7 +18,7 @@
     expression = term {("+"|"-") term}
     term       = factor {("*"|"/") factor}
     factor     = number | "x" | function "(" expression ")" | 
-                 "(" expression ")" | "-" factor | factor "^" factor
+                "(" expression ")" | "-" factor | factor "^" factor
 
     Dialect: ANSI C
     Compiler: Any ANSI C-compatible compiler
@@ -36,7 +36,6 @@
 #include <string.h>  /* String manipulation functions */
 #include <ctype.h>   /* Character type functions */
 #include <errno.h>   /* Error number definitions */
-#include <stdio.h>
 
 /*
   Array of supported mathematical function names.

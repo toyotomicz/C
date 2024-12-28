@@ -18,7 +18,7 @@
     expression = term {("+"|"-") term}
     term       = factor {("*"|"/") factor}
     factor     = number | "x" | function "(" expression ")" | 
-                 "(" expression ")" | "-" factor | factor "^" factor
+                "(" expression ")" | "-" factor | factor "^" factor
 
     Dialect: ANSI C
     Compiler: Any ANSI C-compatible compiler
@@ -316,7 +316,7 @@ double parse_number(Parser *p) {
         char tempBuffer[64];  
         
         /* Prepend '0' to the decimal number */
-        snprintf(tempBuffer, sizeof(tempBuffer), "0%s", p->expr);
+        sprintf(tempBuffer, "0%s", p->expr);
         char *endPtr;
         
         /* Attempt to parse the number */
