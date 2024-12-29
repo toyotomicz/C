@@ -154,91 +154,87 @@ int parse_command_args(int argc, char *argv[],
     *ymin = -10;
     *ymax = 10;
 
-    /* Get first argument which should contain the function or start of function */
-    const char *first_arg = argv[1];
-
-    /* Check if the function is quoted (starts with ") */
-    if (first_arg[0] == '"') {
-        /* 
-            Handle quoted function case
-            Need to combine arguments until we find closing quote
-            This allows functions with spaces like "sin ( x )"
-        */
-        char buffer[1024] = "";             /* Buffer to store combined function */
-        int arg_index = 1;                  /* Current argument being processed */
-        bool found_closing_quote = false;   /* Flag for tracking if we found closing quote */
-
-        /* Process arguments until we find closing quote or run out of args */
-        while (arg_index < argc - 1) { /* -1 ensures space for output_file */
-            const char *current_arg = argv[arg_index];
-            size_t arg_len = strlen(current_arg);
-
-            /* Check if current argument contains closing quote */
-            if (current_arg[arg_len - 1] == '"') {
-                /* 
-                    Found closing quote
-                    If this is first argument (arg_index == 1), need to skip opening quote
-                    Always need to skip closing quote
-                */
-                strncat(buffer, current_arg + (arg_index == 1 ? 1 : 0), 
-                       arg_len - (arg_index == 1 ? 2 : 1));
-                found_closing_quote = true;
-                arg_index++;
-                break;
-            } else if (arg_index == 1) {
-                /* First argument - skip opening quote and add space */
-                strcat(buffer, current_arg + 1);
-                strcat(buffer, " ");
-            } else {
-                /* Middle argument - add whole argument and space */
-                strcat(buffer, current_arg);
-                strcat(buffer, " ");
+    /* Copy and clean the function string */
+    const char* input_function = argv[1];
+    char temp_function[1024] = {0};
+    size_t j = 0;
+    
+    /* Copy while removing whitespace */
+    size_t i;
+    for (i = 0; input_function[i] != '\0'; i++) {
+        if (!isspace(input_function[i])) {
+            if (j >= sizeof(temp_function) - 1) {
+                fprintf(stderr, "Error: Function too long\n");
+                return 1;
             }
-            arg_index++;
+            temp_function[j++] = input_function[i];
         }
-
-        /* Verify we found closing quote */
-        if (!found_closing_quote) {
-            fprintf(stderr, "Error: Missing closing quote in function argument\n");
+    }
+    temp_function[j] = '\0';
+    
+    /* Validate characters */
+    for (i = 0; temp_function[i] != '\0'; i++) {
+        if (!isalnum(temp_function[i]) && 
+            temp_function[i] != '(' && 
+            temp_function[i] != ')' && 
+            temp_function[i] != '^' && 
+            temp_function[i] != '*' && 
+            temp_function[i] != '/' && 
+            temp_function[i] != '+' && 
+            temp_function[i] != '-' && 
+            temp_function[i] != '.') {
+            fprintf(stderr, "Error: Invalid character in function: '%c'\n", temp_function[i]);
             return 1;
-        }
-
-        /* Store processed function and output file */
-        strcpy(function, buffer);
-        *output_file = argv[arg_index];
-
-        /* Check for optional range argument after output file */
-        if (arg_index + 1 < argc) {
-            /* Try to parse range in format xmin:xmax:ymin:ymax */
-            if (sscanf(argv[arg_index + 1], "%lf:%lf:%lf:%lf", 
-                      xmin, xmax, ymin, ymax) != 4) {
-                fprintf(stderr, "Error: Invalid range format. Use xmin:xmax:ymin:ymax\n");
-                return 1;
-            }
-        }
-    } else {
-        /* 
-            Handle unquoted function case
-            Function must be a single argument without spaces
-        */
-        strcpy(function, first_arg);
-        *output_file = argv[2];
-
-        /* Check for optional range argument */
-        if (argc > 3) {
-            /* Try to parse range in format xmin:xmax:ymin:ymax */
-            if (sscanf(argv[3], "%lf:%lf:%lf:%lf", 
-                      xmin, xmax, ymin, ymax) != 4) {
-                fprintf(stderr, "Error: Invalid range format. Use xmin:xmax:ymin:ymax\n");
-                return 1;
-            }
         }
     }
 
-    /* Validate that min values are less than max values */
-    if (*xmin >= *xmax || *ymin >= *ymax) {
-        fprintf(stderr, "Error: Invalid range values. Ensure xmin < xmax and ymin < ymax\n");
-        return 1;
+    /* Copy cleaned function to output */
+    strcpy(function, temp_function);
+
+    /* Set output file */
+    *output_file = argv[2];
+
+    /* Parse optional range parameters if provided */
+    if (argc > 3) {
+        char range_copy[256];  /* Local buffer for range string */
+        strncpy(range_copy, argv[3], sizeof(range_copy) - 1);
+        range_copy[sizeof(range_copy) - 1] = '\0';  /* Ensure null termination */
+
+        char *token;
+        
+        /* Parse xmin */
+        token = strtok(range_copy, ":");
+        if (!token || sscanf(token, "%lf", xmin) != 1) {
+            fprintf(stderr, "Error: Invalid xmin value\n");
+            return 1;
+        }
+
+        /* Parse xmax */
+        token = strtok(NULL, ":");
+        if (!token || sscanf(token, "%lf", xmax) != 1) {
+            fprintf(stderr, "Error: Invalid xmax value\n");
+            return 1;
+        }
+
+        /* Parse ymin */
+        token = strtok(NULL, ":");
+        if (!token || sscanf(token, "%lf", ymin) != 1) {
+            fprintf(stderr, "Error: Invalid ymin value\n");
+            return 1;
+        }
+
+        /* Parse ymax */
+        token = strtok(NULL, ":");
+        if (!token || sscanf(token, "%lf", ymax) != 1) {
+            fprintf(stderr, "Error: Invalid ymax value\n");
+            return 1;
+        }
+
+        /* Validate ranges */
+        if (*xmax <= *xmin || *ymax <= *ymin) {
+            fprintf(stderr, "Error: Invalid range (max must be greater than min)\n");
+            return 1;
+        }
     }
 
     return 0; /* Success */

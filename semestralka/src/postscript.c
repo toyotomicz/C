@@ -128,9 +128,11 @@ void setup_coordinate_system(FILE* ps_file, const GraphParams* params) {
     fprintf(ps_file, "/graphWidth %d def\n", params->width);
     fprintf(ps_file, "/graphHeight %d def\n", params->height);
     
+    /* Calculate the range of data values for both x and y axes */
     double x_range = params->max_x - params->min_x;
     double y_range = params->max_y - params->min_y;
     
+    /* Calculate the scaling factor for the x-axis */
     fprintf(ps_file, "/xScale %g def\n", 
             (x_range != 0) ? params->width / x_range : 1.0);
     fprintf(ps_file, "/yScale %g def\n", 
@@ -161,7 +163,8 @@ void draw_function(FILE* ps_file, const GraphParams* params) {
 
     int first_valid_point = 1;  /* Track when to start a new path segment */
 
-    for (int i = 0; i < params->num_points; i++) {
+    int i;
+    for (i = 0; i < params->num_points; i++) {
         /* Calculate x coordinate based on point index */
         double x = params->min_x + (params->max_x - params->min_x) * 
                   ((double)i / (params->num_points - 1));
@@ -277,7 +280,8 @@ void label_axes(FILE* ps_file, const GraphParams* params) {
     fprintf(ps_file, "/Helvetica findfont 10 scalefont setfont\n");
 
     /* X-axis labels: positioned below x-axis with centered alignment */
-    for (int i = 0; i <= params->x_divisions; i++) {
+    int i;
+    for (i = 0; i <= params->x_divisions; i++) {
         /* Calculate position and value for this grid line */
         double x_pos = (double)i * params->width / params->x_divisions;
         double x_value = params->min_x + (params->max_x - params->min_x) * 
@@ -292,7 +296,7 @@ void label_axes(FILE* ps_file, const GraphParams* params) {
     }
 
     /* Y-axis labels: positioned left of y-axis with right alignment */
-    for (int i = 0; i <= params->y_divisions; i++) {
+    for (i = 0; i <= params->y_divisions; i++) {
         /* Calculate position and value for this grid line */
         double y_pos = (double)i * params->height / params->y_divisions;
         double y_value = params->min_y + (params->max_y - params->min_y) * 
