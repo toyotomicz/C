@@ -1,59 +1,44 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -g
-LDFLAGS = -lm
+CFLAGS = -Wall -Wextra -Werror -g -ansi
+LDFLAGS = -lm -mconsole
 
 # Directories
 SRC_DIR = src
 OBJ_DIR = obj
 
 # Source files and object files
-SRC_FILES = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/stack/*.c)
-OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
+SRC_FILES = $(shell dir /b /s $(SRC_DIR)\*.c)
+OBJ_FILES = $(patsubst $(SRC_DIR)\\%,$(OBJ_DIR)\\%,$(SRC_FILES:.c=.o))
 DEP_FILES = $(OBJ_FILES:.o=.d)
 
 # Output program
-PROGRAM = program
+PROGRAM = program.exe
 
-# Default target
-all: $(PROGRAM)
+# Default target: build the program
+all: create_dirs $(PROGRAM)
+
+# Create necessary directories
+create_dirs:
+	@if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
+	@if not exist $(OBJ_DIR)\stack mkdir $(OBJ_DIR)\stack
 
 # Rule to create the program
 $(PROGRAM): $(OBJ_FILES)
-	$(CC) $(OBJ_FILES) -o $@ $(LDFLAGS)
-	@echo "Built $(PROGRAM)"
+	$(CC) $(OBJ_FILES) -o $(PROGRAM) $(LDFLAGS)
+	@echo Built $(PROGRAM)
 
-# Rule to compile source files to object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(dir $@)
+# Rule to compile source files into object files
+$(OBJ_DIR)\\%.o: $(SRC_DIR)\\%.c
 	$(CC) $(CFLAGS) -MMD -c $< -o $@
 
-# Include dependency files
+# Include dependency files for incremental builds
 -include $(DEP_FILES)
 
-# Clean target
+# Clean target: remove object files and the program
 clean:
-	rm -rf $(OBJ_DIR) $(PROGRAM)
-
-# Windows-specific settings (using MinGW)
-ifdef OS
-ifeq ($(OS),Windows_NT)
-	RM = del /Q
-	MKDIR = if not exist
-else
-	RM = rm -f
-	MKDIR = mkdir -p
-endif
-else
-	RM = rm -f
-	MKDIR = mkdir -p
-endif
-
-clean-win:
-	$(RM) $(OBJ_DIR)\* $(PROGRAM).exe
-
-all-win:
-	$(MAKE) CC=$(CC) PROGRAM=$(PROGRAM).exe
+	@if exist $(OBJ_DIR) rmdir /s /q $(OBJ_DIR)
+	@if exist $(PROGRAM) del /f /q $(PROGRAM)
 
 # Phony targets
-.PHONY: all clean clean-win all-win
+.PHONY: all clean create_dirs

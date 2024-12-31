@@ -34,26 +34,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 # Clean target: remove object files and the program
 clean:
 	rm -rf $(OBJ_DIR) $(PROGRAM)
-
-# Windows-specific clean and build settings (for MinGW)
-ifdef OS
-ifeq ($(OS),Windows_NT)
-	RM = del /Q
-	MKDIR = if not exist
-else
-	RM = rm -f
-	MKDIR = mkdir -p
-endif
-else
-	RM = rm -f
-	MKDIR = mkdir -p
-endif
-
-clean-win:
-	$(RM) $(OBJ_DIR)\* $(PROGRAM).exe
-
-all-win:
-	$(MAKE) CC=$(CC) PROGRAM=$(PROGRAM).exe
-
+	
 # Phony targets
-.PHONY: all clean clean-win all-win
+.PHONY: all clean
