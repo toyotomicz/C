@@ -18,7 +18,7 @@
     expression = term {("+"|"-") term}
     term       = factor {("*"|"/") factor}
     factor     = number | "x" | function "(" expression ")" | 
-                "(" expression ")" | "-" factor | factor "^" factor
+                 "(" expression ")" | "-" factor | factor "^" factor
 
     Dialect: ANSI C
     Compiler: Any ANSI C-compatible compiler
@@ -58,27 +58,33 @@ const int NUM_KNOWN_FUNCTIONS = sizeof(KNOWN_FUNCTIONS) / sizeof(KNOWN_FUNCTIONS
    ____________________________________________________________________________
 */
 EvaluationResult evaluate_expression(const char *expr, double x) {
-    EvaluationResult result = {0, 1};  /* Default to defined */
-    
-    /* Try to catch potential undefined points */
-    errno = 0;
-    Parser parser = { expr, x };
-    
-    /* Use a try-catch like approach with errno and specific checks */
-    result.value = parse_expression(&parser);
-    
-    /* Check for specific undefined conditions */
-    if (errno == ERANGE) {
-        result.is_defined = 0;
-        errno = 0;
-    }
-    
-    /* Check for infinity */
-    if (result.value == HUGE_VAL || result.value == -HUGE_VAL) {
-        result.is_defined = 0;
-    }
-    
-    return result;
+   /* Initialize result struct - default to "defined" state */
+   EvaluationResult result = {0, 1};
+   
+   /* Validate input expression pointer and length */
+   if (!expr || strlen(expr) >= MAX_EXPR_LEN) {
+       result.is_defined = 0;
+       return result;
+   }
+   
+   /* Create safe copy of expression with length bounds */
+   char validated_expr[MAX_EXPR_LEN];
+   strncpy(validated_expr, expr, MAX_EXPR_LEN - 1);
+   validated_expr[MAX_EXPR_LEN - 1] = '\0';
+   
+   /* Set up parser with validated expression */
+   Parser parser = { validated_expr, x };
+   result.value = parse_expression(&parser);
+   
+   /* Check for overflow/underflow and infinity conditions */
+   if (errno == ERANGE || 
+       result.value == HUGE_VAL || 
+       result.value == -HUGE_VAL) {
+       result.is_defined = 0;
+       errno = 0;
+   }
+   
+   return result;
 }
 
 /* ____________________________________________________________________________
@@ -373,7 +379,7 @@ double parse_number(Parser *p) {
     while (original < endPtr) {
         /* Check for exponential notation */
         if (*original == 'e' || *original == 'E') {
-            if (hasE) {
+            if (hasE != 0) {
                 fprintf(stderr, "Error: Invalid number format - multiple exponential notations.\n");
                 exit(2);
             }

@@ -134,9 +134,9 @@ void setup_coordinate_system(FILE* ps_file, const GraphParams* params) {
     
     /* Calculate the scaling factor for the x-axis */
     fprintf(ps_file, "/xScale %g def\n", 
-            (x_range != 0) ? params->width / x_range : 1.0);
+            (fabs(x_range) > DBL_EPSILON) ? params->width / x_range : 1.0);
     fprintf(ps_file, "/yScale %g def\n", 
-            (y_range != 0) ? params->height / y_range : 1.0);
+            (fabs(y_range) > DBL_EPSILON) ? params->height / y_range : 1.0);
 }
 
 /* ____________________________________________________________________________
@@ -273,7 +273,7 @@ void draw_grid_and_axes(FILE* ps_file, const GraphParams* params) {
     - Labels maintain proper spacing even with varying text lengths
 ____________________________________________________________________________ */
 void label_axes(FILE* ps_file, const GraphParams* params) {
-    char label_buffer[32];
+    char label_buffer[32] = {0};
     
     fprintf(ps_file, "%% Draw axis labels\n");
     /* Use Helvetica for readability at small sizes */
@@ -364,7 +364,10 @@ int generate_postscript_graph(const GraphParams* params, const char* output_file
     fprintf(ps_file, "showpage\n");
     fprintf(ps_file, "%%EOF\n");
 
-    fclose(ps_file);
+    if (fclose(ps_file) != 0) {
+        return ERROR_FILE_OPERATION;
+    }
+
     return 0;
 }
 

@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* Validate the provided mathematical expression */
-    if (!validate_expression(function)) {
+    if (validate_expression(function) == 0) {
         fprintf(stderr, "Error: Invalid mathematical expression.\n");
         return 2;
     }
@@ -60,7 +60,11 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error: Cannot create or write to output file '%s'.\n", output_file);
         return 3;
     }
-    fclose(file);
+
+    if (fclose(file) != 0) {
+        fprintf(stderr, "Error: Failed to close file.\n");
+        return 3; /* Use an appropriate error code */
+    }
 
     /* Allocate memory for graph points */
     int num_points = 512;
@@ -78,11 +82,11 @@ int main(int argc, char *argv[]) {
     for (i = 0; i < num_points; i++) {
         double x = xmin + i * step;
         EvaluationResult eval = evaluate_expression(function, x);
-        if (eval.is_defined) {
+        if (eval.is_defined != 0) {
             points[i] = eval.value;
         } else {
             has_undefined_values = true;
-            points[i] = 0.f / 0.f; /* NaN for undefined values, 0.f / 0.f is a trick in ANSI C to get NaN value */
+            points[i] = 0.f / 0.f; /* NaN for undefined values, 0.f / 0.f for NaN value */
         }
     }
 
@@ -156,7 +160,7 @@ int parse_command_args(int argc, char *argv[],
 
     /* Copy and clean the function string */
     const char* input_function = argv[1];
-    char temp_function[1024] = {0};
+    char temp_function[1024] = { '\0' };
     size_t j = 0;
     
     /* Copy while removing whitespace */

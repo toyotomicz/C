@@ -37,6 +37,9 @@
 #include <ctype.h>   /* Character type functions */
 #include <errno.h>   /* Error number definitions */
 
+
+#define MAX_EXPR_LEN 1024
+
 /*
   Array of supported mathematical function names.
   Contains strings representing all valid function names that can be used

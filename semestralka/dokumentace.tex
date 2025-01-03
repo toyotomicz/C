@@ -1,0 +1,547 @@
+\documentclass[12pt]{article} % Pro semestrální práci bude lepší třída report.
+
+% Podpora češtiny
+\usepackage[utf8]{inputenc}
+\usepackage[IL2]{fontenc}
+\usepackage[czech]{babel}
+\usepackage{amsfonts}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\usepackage{float}
+
+\lstset{
+    language=C,
+    basicstyle=\ttfamily,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    breaklines=true,
+    frame=single,
+    tabsize=2,
+}
+\newenvironment{absolutelynopagebreak}
+  {\par\nobreak\vfil\penalty0\vfilneg
+   \vtop\bgroup}
+  {\par\xdef\tpd{\the\prevdepth}\egroup
+   \prevdepth=\tpd}
+   
+% Okraje stránky
+\usepackage[
+    left=30mm, 
+    right=30mm, 
+    top=40mm, 
+    bottom=30mm,
+%    twoside, % Při oboustranné sazbě si zkuste nastavit right=25mm a left=35mm.
+    % showframe % Vykreslí okraje stránky.
+]{geometry}
+
+% Americký styl odstavců (mně se tento styl líbí o poznání více)
+\usepackage{parskip}
+
+% Sazba obrázků
+\usepackage{graphicx}
+\usepackage{svg}      % Pro podporu SVG obrázků
+\graphicspath{{Images/}} % Při vkládání obrázků se bude prefixovat tato relativní cesta.
+
+% Barvičky a barevný text
+\usepackage[usenames, dvipsnames]{xcolor}
+\definecolor{success}{RGB}{25, 135, 84}
+
+% Velice praktický balík pro sazbu matematiky.
+\usepackage{amsmath}
+
+% Možnost změny rozvržení kapitol (pokročilejší záležitosti).
+% Význam argumentů je popsán v dokumentaci balíku `titlesec`: mirrors.ctan.org/macros/latex/contrib/titlesec/titlesec.pdf
+%\usepackage[explicit,compact]{titlesec}
+%\titleformat{\chapter}[block]{\bfseries\huge}{\thechapter}{3ex}{#1}
+%\titlespacing{\chapter}{0mm}{\baselineskip}{\baselineskip}
+
+% Při použití tohoto balíku začnou fungovat odkazy v textu.
+% Zkuste třeba kliknout na odkazy v textu (např. "1.1" na straně 2) nebo v seznamu obrázků/tabulek.
+% `hidelinks` skryje ošklivé výchozí rámečky kolem odkazů.
+\usepackage[hidelinks]{hyperref}
+
+% Zařadí literaturu a seznamy do Obsahu.
+\usepackage[nottoc]{tocbibind}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
+% Ukázka tvorby uživatelského makra
+\newcommand{\lawyertalk}{\tiny}
+
+\renewcommand{\lstlistingname}{Kód}
+
+% Začátek dokumentu
+\begin{document}
+
+% Titulní strana (prostředí minimálně odstraní číslo strany)
+\begin{titlepage}
+    \centering      % Odtud do konce prostředí bude vše na středu,
+    \Large          % velkými písmeny
+    \sffamily       % a bezpatkovým písmem.
+
+    %Vložení obrázku (ze složky `Images`)
+    \includegraphics[width=.7\textwidth]{fav}
+
+    Semestrální práce z předmětu
+
+    % Prázdná mezera mezi řádky znamená nový odstavec.
+    Programování v jazyce C
+    
+    % Vertikální mezera 18 mm.
+    \vspace{18mm}
+    {\Huge\bfseries Vizualizace grafu matematické funkce}
+
+    \vspace{18mm}
+    \today                          % Čas je získán ze systému.
+
+    \vfill                          % Vyplní prostor
+    \raggedright                    % Vše bude zarováno do leva.
+    \textsl{\lawyertalk Autor:}\\   % Vtípek z přednášky + ukázka tvorby makra a přidání sémantiky do stylu textu.
+    Jiří Joska\\               % Příkaz \\ provede násilný zlom řádky.
+    A23B0272P\\
+    \texttt{jjoska@students.zcu.cz}
+
+\end{titlepage}
+
+% Takhle snadno se vytvoří obsah dokumentu.
+% V případně chybějícího záznamu zkuste dokument přeložit vícekrát.
+\begin{absolutelynopagebreak}
+\vspace*{-1.5cm}
+\tableofcontents
+\end{absolutelynopagebreak}
+\vspace*{1.5cm}
+% Při použítí trídy report nebo book je nejvyšší úrovní textu kapitola.
+%\chapter{Úvod}
+\pagebreak
+\section{Zadání} % zvýraznení textu, české uvozovky.
+Naprogramujte v ANSI C přenositelnou \textbf{konzolovou aplikaci}, která jako vstup načte z parametru na příkazové řádce matematickou funkci ve tvaru $y = f(x)$, kde $x,y \in \mathbb{R}$, provede její analýzu a vytvoří soubor ve formátu PostScript s grafem této funkce na zvoleném definičním oboru konzolové aplikace.
+
+
+Program se bude spouštět příkazem \texttt{graph.exe} $\langle func \rangle$ $\langle out-file \rangle$ [$\langle limits \rangle$]. Symbol $\langle func \rangle$ zastupuje zápis matematické funkce jedné reálné nezávisle proměnné (funkce ve více dimenzích program řešit nebude, nalezne-li během analýzy zápisu funkce více nezávisle proměnných než jednu, vypíše srozumitelné chybové hlášení a skončí). Závisle proměnná (zde $y$) je implicitní, a proto se levá strana rovnosti v zápisu nebude uvádět. Symbol $\langle out-file \rangle$ zastupuje jméno výstupního PostScriptového souboru. Takže Váš program může být během testování spuštěn například takto:
+\begin{verbatim}
+X:\>graph.exe "sin(2*x)^3" mygraph.ps
+\end{verbatim}
+
+Výsledkem práce programu bude soubor ve formátu PostScript, který bude zobrazovat graf zadané matematické funkce – ve výše uvedeném případě $y = \sin(2x)^3$ – v kartézské souřadnicové soustavě $(O; x,y)$ s vyznačenými souřadnými osami a (aspoň) význačnými hodnotami definičního oboru a oboru hodnot funkce (viz Specifikace výstupu programu).
+
+Pokud nebudou na příkazové řádce uvedeny alespoň dva argumenty, vypište chybové hlášení a stručný návod k použití programu v angličtině podle běžných zvyklostí (viz např. ukázková semestrální práce na webu předmětu Programování v jazyce C). \textbf{Vstupem programu jsou pouze argumenty na příkazové řádce – interakce s uživatelem pomocí klávesnice či myši v průběhu práce programu se neočekává.}
+
+
+\section{Analýza úlohy}
+\subsection{Specifikace problému}
+\subsubsection{Cíl projektu}
+Cílem tohoto projektu je vytvořit systém, který dokáže:
+\begin{enumerate}
+  \item Zpracovat matematický výraz zadaný jako textový řetězec.
+  \item Vyhodnotit tento výraz pro různé hodnoty proměnné \texttt{x}.
+  \item Vytvořit vizualizaci funkce pomocí formátu PostScript.
+\end{enumerate}
+
+\subsubsection{Požadavky na parser}
+
+Implementovaný syntaktický analyzátor musí splňovat specifické požadavky, které vyplývají z povahy řešené úlohy. Obecně je požadováno zpracování matematických výrazů zadaných v textové podobě, přičemž parser musí podporovat základní matematické operace, zahrnující sčítání, odčítání, násobení, dělení, mocnění a unární mínus. Priorita operátorů musí být v souladu s matematickými pravidly, případně upravena pomocí kulatých závorek. Žádné jiné typy závorek nesmějí být povoleny.
+
+Parser musí umožnit práci s vybranými matematickými funkcemi, mezi něž patří funkce pro výpočet absolutní hodnoty, exponenciální funkce, přirozený a dekadický logaritmus, standardní goniometrické funkce, jejich cyklometrické inverze a hyperbolické varianty. Zadání matematických výrazů nesmí obsahovat jiné symboly, než které odpovídají definovanému formátu. Pokud parser narazí na neplatné znaky, musí generovat srozumitelnou chybovou zprávu.
+
+Matematické výrazy musí být schopny zpracovávat konstanty ve formátu celých a reálných čísel, včetně exponentové notace běžné v programovacím jazyce C. Vzhledem k tomu, že úloha předpokládá práci pouze s grafy v dvourozměrném prostoru, jedinou povolenou proměnnou je \texttt{x}, která je implicitně deklarována a připravena k použití uživatelem.
+
+Při specifikaci rozsahu zobrazení grafu je třeba umožnit zadání definičního oboru a oboru hodnot prostřednictvím nepovinného parametru. Ten by měl být reprezentován čtyřmi hodnotami oddělenými dvojtečkou, které definují dolní a horní meze definičního oboru a oboru hodnot. Pokud tento parametr není zadán, parser musí pracovat s implicitním rozsahem, který je symetrický a přednastavený na interval od \texttt{-10} do \texttt{10} pro obě na sebe kolmé osy v kartézské soustavě.
+
+\subsubsection{Požadavky na generátor grafů}
+
+Prvním a nejdůležitějším požadavkem je schopnost vykreslení grafu matematické funkce v předem definovaném intervalu. Tento interval musí být přesně respektován a odpovídat jak definičnímu oboru, tak oboru hodnot, jež byly uživatelem specifikovány, nebo které odpovídají implicitnímu nastavení.
+
+Dalším klíčovým požadavkem je generování výstupu ve formátu PostScript. Tento formát zajišťuje přenositelnost výsledků a jejich využití v různých grafických aplikacích. Generátor musí být schopen produkovat čistý, validní a efektivní PostScript kód, který lze zobrazit nebo vytisknout.
+
+Graf musí zahrnovat podporu mřížky a os, které umožní uživateli snadnou orientaci v zobrazeném grafu. Mřížka by měla být vykreslena konzistentně v souladu se škálováním grafu a měla by být vizuálně přehledná. Osy grafu musí být správně označeny, včetně popisků zobrazující rozsahy jednotlivých os.
+
+Správné škálování grafu je dalším nezbytným požadavkem. Generátor musí zajistit, aby všechny prvky grafu, včetně křivek, mřížky a os, byly zobrazeny v odpovídající velikosti a proporcích. Škálování musí být automaticky přizpůsobeno specifikovanému intervalu tak, aby nedocházelo k deformaci zobrazení nebo ke ztrátě detailů.
+
+Specifickým aspektem, který generátor musí zohlednit, je ošetření nedefinovaných bodů v grafu. Tyto body, například singularity nebo hodnoty mimo definiční obor, nesmí narušit konzistenci zobrazení. Generátor by měl tyto situace identifikovat a správně je zpracovat.
+
+
+\subsection{Teoretická analýza}
+
+\subsubsection{Parsování matematických výrazů}
+
+V oblasti parsování matematických výrazů existuje několik přístupů, z nichž každý má své výhody a nevýhody. V následujícím textu se podíváme na tři hlavní metody parsování a provedeme jejich analýzu, přičemž zvolené řešení je rekurzivní sestupný parser.
+\paragraph{Rekurzivní sestupný parser (zvolené řešení)}
+
+Rekurzivní sestupný parser je jednoduchý a efektivní nástroj pro syntaktickou analýzu matematických výrazů. Tento přístup je velmi přímočarý, což znamená, že jeho implementace je relativně snadná. Parser je navržen tak, že každá funkce v parseru odpovídá jednomu pravidlu gramatiky. Díky tomu je snadno rozšiřitelný a udržovatelný. Je také přirozeným způsobem, jak zpracovávat operátorovou precedenci.
+
+\subparagraph{Výhody:}
+\begin{itemize}
+    \item Přímočará implementace, což usnadňuje tvorbu a pochopení kódu.
+    \item Snadná údržba a rozšiřitelnost, což znamená, že parser lze relativně jednoduše modifikovat pro nové funkce nebo operátory.
+    \item Přirozené zpracování operátorové precedence, které je nezbytné pro správné vyhodnocení matematických výrazů.
+\end{itemize}
+
+\subparagraph{Nevýhody:}
+\begin{itemize}
+    \item Vyšší paměťová náročnost při hluboké rekurzi, což může být problém při zpracování složitějších výrazů.
+    \item Potenciálně pomalejší než jiné přístupy, což může ovlivnit výkon při práci s rozsáhlými výrazy.
+\end{itemize}
+
+\paragraph{Shunting Yard algoritmus}
+
+Shunting Yard algoritmus, navržený Edsgerem Dijkstrou, je efektivní metodou pro syntaktickou analýzu matematických výrazů zapsaných v infixové notaci. Tento přístup se vyznačuje nižší paměťovou náročností ve srovnání s rekurzivním sestupem, protože nevyžaduje použití rekurzivního zásobníku. V případě výrazů s více operátory nebo s operacemi s vyšší prioritou je tento algoritmus efektivnější.
+
+\subparagraph{Výhody:}
+\begin{itemize}
+    \item Efektivní zpracování výrazů, zejména u složitějších operátorů a funkcí.
+    \item Nižší paměťová náročnost, což je výhodné při práci s velkými výrazy.
+\end{itemize}
+
+\subparagraph{Nevýhody:}
+\begin{itemize}
+    \item Složitější implementace pro funkce, což může znamenat více kódu a složitější správu výjimek.
+    \item Obtížnější udržitelnost a rozšiřitelnost, zejména pokud je potřeba přidat nové funkce nebo operátory.
+\end{itemize}
+
+\paragraph{Parser kombinátory}
+
+Parser kombinátory jsou flexibilním přístupem k syntaktické analýze, kde lze jednotlivé dílčí parsovací funkce kombinovat do složitějších parserů. Tento přístup je velmi modulární a deklarativní, to znamená, že parser je snadno přizpůsobitelný a rozšiřitelný. 
+
+\subparagraph{Výhody:}
+\begin{itemize}
+    \item Vysoká modularita, která umožňuje snadnou úpravu a přizpůsobení parseru.
+    \item Deklarativní styl, který usnadňuje pochopení a práci s jednotlivými komponentami parseru.
+\end{itemize}
+
+\subparagraph{Nevýhody:}
+\begin{itemize}
+    \item Složitější implementace v C, protože tento přístup není v tomto jazyce přirozeně podporován.
+    \item Potenciálně horší výkon, zejména při práci s většími a složitějšími výrazy.
+\end{itemize}
+
+\subsubsection{Vyhodnocování výrazů}
+
+Proces vyhodnocování zahrnuje několik fází, od lexikální analýzy, přes syntaktickou analýzu, až po samotné vyhodnocení. Diagram níže znázorňuje proces vyhodnocování výrazu.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[node distance=1.5cm]
+
+% Definice bloků
+\node (A) [rectangle, draw, text centered] {Vstupní řetězec};
+\node (B) [rectangle, draw, text centered, below of=A] {Lexikální analýza};
+\node (C) [rectangle, draw, text centered, below of=B] {Syntaktická analýza};
+\node (D) [rectangle, draw, text centered, below of=C] {Rekurzivní vyhodnocení};
+\node (E) [rectangle, draw, text centered, below of=D] {Kontrola definovanosti};
+\node (F) [diamond, draw, aspect=2, text centered, below of=E] {Je definováno?};
+\node (G) [rectangle, draw, text centered, left of=F, xshift=-3.5cm] {Vrátit hodnotu};
+\node (H) [rectangle, draw, text centered, right of=F, xshift=3.5cm] {Označit jako nedefinované};
+\node (I) [rectangle, draw, text centered, below of=F, yshift=-1.5cm] {Výsledek};
+
+% Spojení bloků
+\draw[->] (A) -- (B);
+\draw[->] (B) -- (C);
+\draw[->] (C) -- (D);
+\draw[->] (D) -- (E);
+\draw[->] (E) -- (F);
+\draw[->] (F) -- node[left, yshift=0.5cm, xshift=1cm] {Ano} (G);
+\draw[->] (F) -- node[right, yshift=0.5cm, xshift=-0.5cm] {Ne} (H);
+\draw[->] (G) -- (I);
+\draw[->] (H) -- (I);
+
+\end{tikzpicture}
+
+\caption{Proces vyhodnocování matematického výrazu.}
+\end{figure}
+
+Tento diagram ukazuje kroky, které jsou prováděny při analýze a vyhodnocování matematického výrazu. Po lexikální analýze a syntaktické analýze následuje fáze rekurzivního vyhodnocení, kde je každá část výrazu vyhodnocena podle definovaných pravidel. Následně se ověřuje, zda jsou jednotlivé hodnoty definované. Pokud je hodnota definována, vrátí se její výsledek; pokud není, označí se jako nedefinovaná.
+
+
+\subsubsection{Generování PostScript výstupu}
+
+Generování PostScript výstupu je finální fází při tvorbě grafu. Postup zahrnuje několik základních kroků: definici souřadnicového systému, vykreslení mřížky a os, přidání popisků a legendy a nakonec zobrazení samotné křivky funkce, která je tvořena propojenými diskrétními body.
+
+\paragraph{Struktura PostScript dokumentu}
+PostScript dokument začíná hlavičkou, která obsahuje metadata, jako jsou informace o autorovi, název dokumentu a rozměry grafu. Následuje definice souřadnicového systému, jenž umožňuje přizpůsobení měřítka a polohy grafu. Další částí je vykreslení mřížky a os, které pomáhají při orientaci v grafu. Poté se přidávají popisky a legenda, které zajišťují čitelnost a poskytují důležité informace pro interpretaci grafu. Následně je vykreslena funkční křivka podle vypočítaných bodů.  Po vykreslování je vložen příkaz \texttt{showpage} pro zobrazení obsahu a na konci ukončující znak \texttt{\%EOF}. 
+
+
+\section{Popis implementace}
+
+\subsection{Architektura aplikace}
+
+Systém pro parsování matematických výrazů a generování jejich grafické reprezentace využívá modulární architekturu rozdělenou do čtyř hlavních modulů:
+
+\begin{itemize}
+    \item \texttt{main.c} – vstupní bod aplikace, zpracovává argumenty příkazové řádky a koordinuje ostatní moduly.
+    \item \texttt{parser.c} – implementuje algoritmus rekurzivního sestupu pro analýzu matematických výrazů.
+    \item \texttt{postscript.c} – generuje grafický výstup ve formátu PostScript.
+    \item \texttt{stack.c} – poskytuje generickou implementaci zásobníku pro zpracování výrazů.
+\end{itemize}
+
+\noindent Následující schéma ilustruje závislosti mezi moduly:
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Images/struktura.png} % Nastavte požadovanou šířku
+    \caption{Mudulární architektura projektu.}
+    \label{fig:example-svg}
+\end{figure}
+\newpage
+
+\subsection{Klíčové datové struktury}
+
+\subsubsection{Struktura \texttt{Parser}}
+Základní datová struktura enkapsulující informace pro zpracování matematického výrazu:
+\begin{lstlisting}[language=C, caption=Struktura Parser]
+typedef struct {
+    const char *expr; /* Aktualni pozice ve vyrazu */
+    double x;         /* Hodnota promenne x */
+} Parser;
+\end{lstlisting}
+
+\subsubsection{Generický zásobník \texttt{stack}}
+Flexibilní datová struktura pro práci s různými typy:
+\begin{lstlisting}[language=C, caption=Struktura Stack]
+typedef struct {
+    void *items;       /* Pole polozek */
+    size_t capacity;   /* Maximalni kapacita */
+    size_t item_size;  /* Velikost polozky (v bytech) */
+    size_t sp;         /* Ukazatel na vrchol zasobniku */
+} Stack;
+\end{lstlisting}
+
+\subsubsection{Parametry grafu \texttt{GraphParams}}
+Tato struktura obsahuje parametry nezbytné pro generování grafického výstupu:
+\begin{lstlisting}[language=C, caption=Struktura GraphParams]
+typedef struct {
+    double min_x, max_x, min_y, max_y; /* Rozsahy os */
+    int width, height;                /* Rozmery vystupu */
+    int x_divisions, y_divisions;/* Pocet dilku na osach */
+    Point *points;                     /* Vypoctene body */
+    size_t num_points;                 /* Pocet bodu */
+} GraphParams;
+\end{lstlisting}
+\newpage
+
+\subsection{Implementace matematického parseru}
+
+Parser je implementován pomocí metody rekurzivního sestupu, která umožňuje efektivně zpracovávat matematické výrazy podle definované gramatiky. Tato gramatika je definována následující formální notací:
+\begin{verbatim}
+expression = term {("+"|"-") term}
+term       = factor {("*"|"/") factor}
+factor     = number | "x" | function "(" expression ")" |
+             "(" expression ")" | "-" factor | factor "^" factor
+\end{verbatim}
+Důležitým aspektem implementace je hierarchické členění operací podle jejich matematické priority. Funkce \texttt{parse\_expression} zpracovává operace s nejnižší prioritou, tj. sčítání a odčítání,  funkce \texttt{parse\_term} zpracovává násobení a dělení a \texttt{parse\_factor} řeší operace s ještě vyšší prioritou jako je uzávorkování, unární mínus a umocnění.
+
+Pro zpracování matematických funkcí je ve funkci \texttt{parse\_function} implementován mechanizmus, který nejprve extrahuje název funkce a poté rekurzivně vyhodnocuje její argumenty. V rámci funkce se nejprve do bufferu přečte název funkce, který je následně použit k určení konkrétní matematické operace. Po zpracování názvu funkce parser očekává otevírací závorku, argument funkce a uzavírací závorku. Argument je vyhodnocen rekurzivním voláním funkce \texttt{parse\_expression}.
+
+Implementace obsahuje kompletní sadu základních matematických funkcí: trigonometrické funkce (\texttt{sin}, \texttt{cos}, \texttt{tan}), jejich inverzní varianty (\texttt{asin}, \texttt{acos}, \texttt{atan}), hyperbolické funkce (\texttt{sinh}, \texttt{cosh}, logaritmické funkce (\texttt{ln}, \texttt{log}), exponenciální funkci (\texttt{exp}), \texttt{tanh}) a absolutní hodnotu (\texttt{abs}).
+Pro každou funkci jsou implementovány kontroly definičního oboru. Například pro inverzní trigonometrické funkce se kontroluje, zda argument leží v intervalu $[-1, 1]$, a pro logaritmické funkce se ověřuje, zda je argument kladný. V případě porušení těchto podmínek je nastaven příznak chyby \texttt{errno} na hodnotu \texttt{ERANGE} a funkce vrací hodnotu \texttt{HUGE\_VAL}.
+
+Zpracování číselných hodnot je realizováno funkcí \texttt{parse\_number}, která implementuje komplexní algoritmus pro parsování čísel v různých formátech. Podporovány jsou celá čísla, desetinná čísla i vědecká notace. Implementace zahrnuje speciální ošetření případů, kdy číslo začíná desetinnou tečkou, toto vyžaduje manipulaci s řetězci pro zajištění korektního parsování.
+
+\subsection{Generování PostScript výstupu}
+
+Systém pro generování grafů ve formátu PostScript je navržen tak, aby poskytoval přesné a kvalitní vizualizace funkcí. Tento systém je postaven na principu využívající strukturu \texttt{GraphParams}, která zapouzdřuje všechny nezbytné parametry pro generování grafu.
+
+\subsubsection{Koordinační systém a škálování}
+
+Implementace zahrnuje systém pro konfiguraci a správu souřadnicového systému PostScriptu. Funkce \texttt{setup\_coordinate\_system} provádí přesný výpočet měřítkových faktorů pro obě osy. Zohledňuje přitom hraniční případy, například nulový rozsah os, a automaticky aplikuje odpovídající transformace. Tím je zajištěno optimální využití dostupného prostoru při zachování proporcionality dat.
+\begin{lstlisting}[language=C, caption=Nastavení koordinačního systému]
+/* Vypocet rozsahu dat */
+double x_range = params->max_x - params->min_x;
+double y_range = params->max_y - params->min_y;
+/* Vypocet meritka pro osu X a Y */    
+fprintf(ps_file, "/xScale %g def\n", 
+    (x_range != 0) ? params->width / x_range : 1.0);
+fprintf(ps_file, "/yScale %g def\n", 
+    (y_range != 0) ? params->height / y_range : 1.0);
+\end{lstlisting}
+
+\subsubsection{Systém mřížky a popisků}
+
+Generování mřížky a popisků využívá algoritmus pro formátování číselných hodnot na osách. Formátování se řídí následujícími pravidly:
+\begin{itemize}
+\item Hodnoty blízké nule ($|x| < 0.001$) jsou zobrazeny ve speciálním formátu pro lepší čitelnost.
+\item Pro velké hodnoty ($|x| \geq 1000$) je použit vědecký zápis.
+\item Ostatní hodnoty jsou prezentovány ve standardním desetinném formátu s konstantním počtem desetinných míst.
+\end{itemize}
+\subsubsection{Typografické aspekty}
+
+Systém také klade důraz na typografickou kvalitu textových elementů. Pro textové prvky je použit font Helvetica, který zajišťuje dobrou čitelnost. Je zde implementován automatický výpočet pozic textových elementů pro jejich správné zarovnání. K popisku vertikální osy je použita rotace textu o 90 stupňů.
+
+
+\subsubsection{Správa grafického kontextu}
+
+Pro správu transformací a grafických atributů využívá systém zásobník grafických stavů PostScriptu. Implementace zajišťuje správnou inicializaci a ukončení grafického kontextu a přesné nastavení okrajů a transformací souřadnic.
+
+Všechny grafické operace jsou navrženy s ohledem na minimalizaci velikosti výsledného PostScript souboru a maximalizaci efektivity.
+
+\subsubsection{Vykreslování funkční křivky}
+Proces vykreslování funkční křivky využívá algoritmus, který se zaměřuje na vysokou přesnost a vizuální kvalitu výstupu. Implementace obsahuje systém pro detekci a zpracování nespojitostí ve funkcích, který pracuje na principu sledování validity bodů pomocí proměnné \texttt{first\_valid\_point}. 
+
+Při detekci bodu mimo definovaný rozsah dojde k přerušení aktuální cesty a při návratu do platného rozsahu začne cesta nová. Křivka je diskretizována na 512 bodů, které jsou rovnoměrně rozloženy na intervalu $[min_x, max_x]$, což ve většině případů zajišťuje dostatečně hladký vzhled při zachování rozumné výpočetní náročnosti.
+
+Algoritmus provádí dvojí transformaci souřadnic -- nejprve z indexu bodu na x-ovou souřadnici a následně z datových souřadnic na grafické. Přitom využívá PostScript příkazy (\texttt{moveto}, \texttt{lineto}) a minimalizuje jejich počet pomocí podmíněného vykreslování.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Images/graf.pdf} % Nastavte požadovanou šířku
+    \caption{Graf funkce $f(x) = e^{-x^2} \sin(10x)$, kde $x \in [-2,2]$.}
+    \label{fig:example-graph}
+\end{figure}
+
+
+\subsubsection{Správa chyb a validace vstupů}
+
+Systém implementuje mechanismus zpracování chyb prostřednictvím předdefinovaných chybových kódů, které pokrývají tři hlavní kategorie problémů:
+
+\begin{enumerate}
+    \item Neplatné vstupní parametry (\texttt{ERROR\_INVALID\_PARAMS}).
+    \item Selhání operací se soubory (\texttt{ERROR\_FILE\_OPERATION}).
+    \item Problémy s alokací paměti (\texttt{ERROR\_MEMORY\_ALLOCATION}).
+\end{enumerate}
+
+Každá operace podléhá důkladné validaci vstupních parametrů. Tento přístup zajišťuje vysokou robustnost a spolehlivost generovaného výstupu.
+
+\section{Uživatelská příručka}
+\subsection{Systémové požadavky}
+Pro úspěšné sestavení a spuštění programu potřebujete:
+\begin{itemize}
+\item ANSI C kompatibilní kompilátor (např. GCC)
+\item Make utilitu
+\item Standardní C knihovny (math.h, stdlib.h, stdio.h, string.h, stdbool.h, ctype.h, errno.h)
+\end{itemize}
+\subsection{Instalace a sestavení}
+\paragraph{Linux/Unix systémy}
+Pro sestavení programu na Unix-like systémech postupujte následovně:
+\begin{lstlisting}[language=bash]
+$ make
+\end{lstlisting}
+Program bude vytvořen s názvem \texttt{program} v aktuálním adresáři.
+\paragraph{Windows}
+Pro sestavení programu na Windows:
+\begin{lstlisting}[language=bash]
+make -f Makefile.win
+\end{lstlisting}
+Program bude vytvořen s názvem \texttt{program.exe} v aktuálním adresáři.
+
+\subsection{Použití programu}
+Program se spouští z příkazové řádky s následujícími parametry:
+\begin{lstlisting}
+program <funkce> <vystupni_soubor> [xmin:xmax:ymin:ymax]
+\end{lstlisting}
+\subsubsection{Parametry programu}
+\begin{itemize}
+    \item \texttt{funkce} – matematický výraz pro vykreslení (pokud je v uvozovkách, může obsahovat mezery). Dostupné funkce v matematickém zápisu jsou: absolutní hodnota $\operatorname{abs}$; funkce $\exp$, přirozený logaritmus $\ln$, dekadický logaritmus $\log$; goniometrické funkce $\sin$, $\cos$, $\tan$; cyklometrické funkce $\arcsin$, $\arccos$, $\arctan$; hyperbolické funkce $\sinh$, $\cosh$, $\tanh$. A matematické operace: unární mínus, sčítání, odčítání, násobení ($*$), dělení ($/$), a umocnění (\texttt{\^{}}).
+    \item \texttt{vystupni\_soubor} – název výstupního PostScript souboru,
+    \item \texttt{xmin:xmax:ymin:ymax} – volitelný parametr určující rozsah vykreslování (výchozí hodnoty jsou $-10:10:-10:10$).
+\end{itemize}
+
+
+\subsubsection{Příklady použití}
+\begin{lstlisting}[language=bash, caption=Příklady použití]
+# Zakladni pouziti
+$ ./program "sin(x^2)" vystup1.ps
+
+# Pouziti s vlastnim rozsahem
+$ ./program "sin(x^2)" vystup2.ps -5:5:-1:1
+
+# Funkce bez mezer, nevyzaduje uvozovky
+$ ./program sin\(x\) vystup.ps
+
+# Slozitejsi funkce s mezerami
+$ ./program ./program " sin ( x ) * log ( x ) ^ 2 " vystup3.ps 10:20:-2:2
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Images/priklad.pdf} % Nastavte požadovanou šířku
+    \caption{Zobrazení souboru \texttt{vystup3.ps}.}
+    \label{fig:example-graph}
+\end{figure}
+
+\subsection{Formát výstupu}
+Program generuje výstup do kořenového adresáře ve formátu PostScript s následujícími vlastnostmi:
+\begin{itemize}
+\item Rozlišení křivky: 512 x 512 bodů
+\item Mřížka: 10 x 10 dílků
+\item Automatické škálování podle zadaného rozsahu
+\end{itemize}
+
+\subsection{Chybové hlášky}
+
+V implementaci je zajištěno ošetření chybových stavů tak, aby uživatel získal srozumitelnou zpětnou vazbu. Každá z těchto hlášek je navržena tak, aby usnadnila diagnostiku problému a umožnila
+uživateli podniknout kroky k jeho vyřešení. Následující výčet obsahuje chybové hlášky použité v programu a jejich význam:
+
+\begin{itemize}
+    \item \textbf{Error: Invalid mathematical expression.}  
+    Tato chyba se vyskytne, pokud je zadán neplatný matematický výraz, který nelze správně analyzovat. Uživatel by měl zkontrolovat syntaxi a platnost výrazu.
+
+    \item \textbf{Error: Cannot create or write to output file '\textit{filename}'.}  
+    Program se pokusil vytvořit nebo zapisovat do souboru, ale operace selhala. Možné příčiny zahrnují nedostatečná oprávnění, neexistující adresář nebo jiný problém se souborem.
+
+    \item \textbf{Error: Memory allocation failed.}  
+    Došlo k selhání alokace paměti pro ukládání dat. Tato chyba může nastat při nedostatku systémových prostředků nebo při požadavku na nadměrné množství paměti.
+
+    \item \textbf{Error: Invalid character in function: '\textit{char}'.}  
+    Funkce obsahuje neplatný znak, který není povolen v matematických výrazech. Uživatel by měl odstranit všechny nepovolené znaky.
+
+    \item \textbf{Error: Invalid xmin value.}  
+    Zadána byla neplatná hodnota minimální hranice osy x (\texttt{xmin}). Uživatel by měl zadat číselnou hodnotu.
+
+    \item \textbf{Error: Invalid xmax value.}  
+    Zadána byla neplatná hodnota maximální hranice osy x (\texttt{xmax}). Hodnota musí být číselná a větší než \texttt{xmin}.
+
+    \item \textbf{Error: Invalid ymin value.}  
+    Zadána byla neplatná hodnota minimální hranice osy y (\texttt{ymin}). Uživatel by měl zadat číselnou hodnotu.
+
+    \item \textbf{Error: Invalid ymax value.}  
+    Zadána byla neplatná hodnota maximální hranice osy y (\texttt{ymax}). Hodnota musí být číselná a větší než \texttt{ymin}.
+
+    \item \textbf{Error: Invalid range (max must be greater than min).}  
+    Rozsah os byl zadán nesprávně. Maximální hodnota musí být větší než minimální hodnota, jak pro osu x, tak pro osu y.
+
+    \item \textbf{Error: Failed to generate PostScript graph. Code: \textit{n}.}  
+    Generování PostScriptového grafu selhalo. Návratový kód chyby (\textit{n}) poskytuje další informace o problému.
+
+    \item \textbf{Warning: The function contains undefined values in the given range.}  
+    Varování upozorňuje, že ve zadaném rozsahu jsou body, kde matematický výraz není definován. Graf bude v těchto oblastech přerušen.
+\end{itemize}
+
+
+\section{Závěr}
+
+V rámci této semestrální práce byl vytvořen program pro analýzu a vizualizaci matematických funkcí. Program úspěšně implementuje všechny požadované funkcionality ze zadání.
+
+Implementovaný parser dokáže efektivně zpracovávat matematické výrazy s vysokou přesností. Během testování se ukázalo, že program zvládá analyzovat i komplexní matematické funkce v řádu milisekund. Generování výstupního PostScript souboru ze zadané funkce do terminálu trvá průměrně okolo 5 ms na běžném počítači.
+
+Program byl důkladně otestován na různých operačních systémech (Linux, Windows) a vykazuje konzistentní chování napříč platformami. Důraz byl kladen na robustnost zpracování vstupů a přehledné hlášení případných chyb uživateli.
+
+Během vývoje se vyskytlo několik zajímavých výzev. Především šlo o:
+\begin{itemize}
+    \item Implementaci robustního parseru pro matematické výrazy v ANSI C.
+    \item Generování souboru v PostScript formátu.
+    \item Zajištění přenositelnosti kódu mezi různými platformami.
+\end{itemize}
+
+Pro další rozvoj projektu by bylo vhodné zvážit následující vylepšení:
+\begin{itemize}
+    \item Rozšíření podpory matematických funkcí o komplexní analýzu.
+    \item Optimalizace paměťové náročnosti při zpracování velmi dlouhých výrazů.
+    \item Přidání podpory pro export do dalších grafických formátů.
+\end{itemize}
+
+Zadání bylo splněno ve všech bodech a výsledný program představuje robustní nástroj pro analýzu matematických funkcí. Zdrojový kód je dobře strukturovaný, důkladně komentovaný a připravený pro případná budoucí rozšíření. Program tak může sloužit jako základ pro další vývoj v oblasti matematické analýzy a vizualizace.
+
+
+\newpage
+\listoffigures
+
+\addcontentsline{toc}{section}{Seznam ukázek kódů}
+\renewcommand{\lstlistlistingname}{Seznam ukázek kódů}
+\lstlistoflistings
+
+\end{document}

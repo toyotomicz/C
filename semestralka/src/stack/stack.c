@@ -47,7 +47,7 @@ struct stack *stack_alloc(const size_t capacity, const size_t item_size) {
         return NULL;
     }
     /* Initialize the stack, clean up and return NULL on failure */
-    if (!stack_init(new_stack, capacity, item_size)) {
+    if (stack_init(new_stack, capacity, item_size) == 0) {
         free(new_stack);
         return NULL;
     }
@@ -97,6 +97,7 @@ void stack_deinit(struct stack *s) {
     s->capacity = 0;
     s->item_size = 0;
     s->sp = 0;
+    s->items = NULL;
 }
 
 /* ____________________________________________________________________________
@@ -126,14 +127,24 @@ void stack_dealloc(struct stack **s) {
     - Stack pointer management
 ____________________________________________________________________________ */
 int stack_push(struct stack *s, const void *item) {
-    if (s->sp == s->capacity) {
-        return 0; /* Stack is full */
+    /* Check if the stack is valid and not full */
+    if (!s || !item || s->sp == s->capacity) {
+        return 0; /* Failure: Invalid input or stack is full */
     }
-    /* Calculate the destination address and copy the item */
-    memcpy((char *)s->items + (s->sp * s->item_size), item, s->item_size);
+
+    /* Temporary buffer to avoid aliasing */
+    char temp[s->item_size];
+
+    /* Copy the item into the temporary buffer */
+    memcpy(temp, item, s->item_size);
+
+    /* Copy the temporary buffer into the stack's storage at the correct position */
+    memcpy((char *)s->items + (s->sp * s->item_size), temp, s->item_size);
+
+    /* Increment the stack pointer (sp) to reflect the new stack state */
     s->sp++;
 
-    return 1;
+    return 1; /* Success */
 }
 
 /* ____________________________________________________________________________

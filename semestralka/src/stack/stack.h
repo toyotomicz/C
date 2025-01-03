@@ -133,6 +133,7 @@ void stack_dealloc(struct stack **s);
     Memory Safety:
     - Ensures item size matches initialization
     - Prevents buffer overflow
+    - Avoids aliasing
 ____________________________________________________________________________ */
 int stack_push(struct stack *s, const void *item);
 
